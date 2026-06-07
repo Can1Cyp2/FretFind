@@ -130,7 +130,13 @@ npm run start
 npm run android
 npm run ios
 npm run web
+npm run mock:progression
+npm run test:mock
 ```
+
+`npm run mock:progression` prints the May 27 - June 8 proof-of-concept result using hardcoded data.
+
+`npm run test:mock` runs a lightweight mock verification.
 
 ## Documentation
 

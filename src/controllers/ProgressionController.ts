@@ -5,7 +5,9 @@ export class ProgressionController {
     progression: string[],
     candidateChord: string
   ): ProgressionAnalysisResult {
-    // This is intentionally hardcoded for the first deliverable proof.
+    // This is intentionally hardcoded for the first deliverable proof:
+
+    // The progression controller receives a mock progression and explains one candidate chord
     const fitsMockProgression =
       progression.join('-') === 'C-Am-F-G' && candidateChord === 'Em';
 

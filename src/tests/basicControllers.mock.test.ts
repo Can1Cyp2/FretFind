@@ -27,7 +27,7 @@ testProgressionController();
 console.log('All basic controller mock tests passed.');
 
 function testFretboardInteractionController(): void {
-  // The fretboard controller receives the mock fret positions and returns note names.
+  // The fretboard controller receives the mock fret positions and returns note names
   fretboardController.selectFrets(mockFretSelections);
   const selectedNotes = fretboardController.getSelectedNotes();
 
@@ -60,8 +60,8 @@ function testChordAnalysisController(): void {
   console.log('ChordAnalysisController test passed.');
 }
 
+// The progression controller receives a mock progression and explains one candidate chord
 function testProgressionController(): void {
-  // The progression controller receives a mock progression and explains one candidate chord.
   const progressionResult = progressionController.analyzeProgression(
     mockProgression,
     mockCandidateChord

@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.ts",
   "dependencies": {
+    "@react-native-async-storage/async-storage": "2.2.0",
     "expo": "~56.0.6",
+    "expo-av": "^16.0.8",
     "expo-status-bar": "~56.0.4",
     "react": "19.2.3",
     "react-native": "0.85.3"
@@ -16,7 +18,9 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "mock:progression": "tsc --project tsconfig.mock.json && node dist/mock/src/scripts/mockProgression.js",
+    "test:mock": "tsc --project tsconfig.mock.json && node dist/mock/src/tests/basicControllers.mock.test.js"
   },
   "private": true
 }

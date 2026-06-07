@@ -20,6 +20,7 @@ const progressionResult = progressionController.analyzeProgression(
   mockCandidateChord
 );
 
+// console log to show the results of the mock analysis when running this script:
 console.log('FretFind May 27 - June 8 Mock Result');
 console.log('');
 console.log(`Selected notes: ${chordResult.selectedNotes.join(' - ')}`);
