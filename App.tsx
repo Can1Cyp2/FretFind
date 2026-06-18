@@ -1,20 +1,33 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { SafeAreaView, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { Fretboard } from './src/components/Fretboard/Fretboard';
+import { COLORS } from './src/styles/colors';
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor={COLORS.bg} />
+      <View style={styles.header}>
+        <Text style={styles.title}>FretFind</Text>
+      </View>
+      <Fretboard />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.bg,
+  },
+  header: {
+    paddingVertical: 12,
     alignItems: 'center',
-    justifyContent: 'center',
+  },
+  title: {
+    color: COLORS.textPrimary,
+    fontSize: 18,
+    fontWeight: '800',
+    letterSpacing: 1,
   },
 });
