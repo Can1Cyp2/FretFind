@@ -139,5 +139,7 @@ There is no audio, chord result, or progression on screen yet. This deliverable 
 - [x] Add helpers for the pitch class at a fret and its note name.
 - [x] Build the interactive fretboard prototype with tap to select.
 - [x] Wire the fretboard into the main app screen.
+
+The following checklist items might be pushed back past June 19. The current goal is to have the fretboard and data model done by then, with intervals and chord formulas to be added in the next deliverable. As I realized it might be easier to code this in a different way.
 - [ ] Define the interval data structures.
 - [ ] Define the chord formula data structures.
