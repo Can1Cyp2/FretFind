@@ -19,7 +19,6 @@ Tap the 'o' button at the nut to fill every empty string with its open note.
 
 
 ## Interactive Fretboard Prototype:
-
 Style: 
 Although this is my first attempt at the fretboard design, I wanted to make it look as good as possible. The design is inspired by the clean, modern aesthetic of a guitar, in addition to modern apps. It has a dark background and bright accent colours for the notes. The fret markers have a subtle 3D effect with shadows and highlights to make them look like real frets. The open string labels are positioned above the nut for easy reference.
 
@@ -42,7 +41,6 @@ Each string keeps at most one selected fret at a time, which matches how a finge
 Though, you could make chords that do not have realistic spacing for a finger, such as on the A string on the 1st fret, and the B string on the 9th fret, which is a valid chord but not one that a player could easily play. This is something to consider for future versions, but for now the user can make any combination of notes as playability is not the focus of this deliverable, or the app in general. The initial input is up to the user.
 
 ## Data Structures Defined
-
 The core data model for notes and the fretboard:
 ```ts
 type PitchClass = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11; // a note without its octave
@@ -121,7 +119,6 @@ user taps a fret
 ## App Entry
 
 The app screen is wired in `App.tsx`:
-
 ```txt
 App
   -> screen title

@@ -409,7 +409,6 @@ user taps a fret
 ```
 
 ## App Entry (d2)
-
 The app screen is wired in `App.tsx`:
 - screen title
 - Fretboard
@@ -417,7 +416,6 @@ The app screen is wired in `App.tsx`:
 There is no audio, chord result, or progression on screen yet. This deliverable is only the interactive fretboard and the data model behind it.
 
 ## Screenshots
-
 Screenshots of the interactive fretboard prototype are in `documents/d2-jun8-jun19/`:
 img1-Fretboard.JPG               -> the fretboard on the main screen
 img2-Fretboard-Scrollable.JPG    -> the fretboard scrolled to show more frets
