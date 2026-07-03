@@ -139,11 +139,11 @@ It is essentially a rewritten outline of the progress made so far, and what is n
 
 ## Checklist
 
-- [ ] Add the interval and chord formula data structures (ChordType, ChordMatch, and the helpers).
-- [ ] Add the chord formula table for the triads and seventh chords (and more).
-- [ ] Add the reverse chord matching engine.
-- [ ] Add the chord naming helper.
-- [ ] Show the matching chords live under the fretboard.
-- [ ] Move the selection state up so the fretboard and the results share it.
+- [X] Add the interval and chord formula data structures (ChordType, ChordMatch, and the helpers).
+- [X] Add the chord formula table for the triads and seventh chords (and more).
+- [X] Add the reverse chord matching engine.
+- [X] Add the chord naming helper.
+- [X] Show the matching chords live under the fretboard.
+- [X] Move the selection state up so the fretboard and the results share it.
 - [ ] Write the early-mid-project status report.
 - [ ] Update the progress file with everything done this deliverable.
