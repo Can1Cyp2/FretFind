@@ -1,4 +1,4 @@
-/* Chord matches under the fretboard. It updates live as the
+/* Chord matches under the fretboard. Updates live as the
    user taps notes. With fewer than two notes it shows a short hint, otherwise it
    lists the matching chords from best to worst, with a small count of how many of
    them are perfect matches. */
@@ -29,7 +29,7 @@ export function ResultsPanel({ matches, activeCount, preferFlats }: Props) {
     );
   }
 
-  // Two or more notes, but nothing in the chord table fits them.
+  // Two or more notes, but nothing in the chord table fits them
   if (matches.length === 0) {
     return (
       <View style={resultStyles.container}>
