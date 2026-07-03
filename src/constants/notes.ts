@@ -12,3 +12,9 @@ export const PITCH_CLASS_TO_FLAT: NoteName[] = [
 
 export const TOTAL_FRETS = 22; // Max frets (22 is a common number for guitar fretboards, but this can be adjusted if needed later, though realitically this many frets is already not truly needed)
 export const NUM_STRINGS = 6; // Standard guitar has 6 strings
+
+// Default spelling for a root note when the user has not chosen sharps or flats.
+// Picks the more common name for each pitch class (mostly sharps, but flats where those read more naturally)
+export const DEFAULT_ROOT_SPELLING: NoteName[] = [
+  'C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B',
+];
