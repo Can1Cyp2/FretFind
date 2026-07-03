@@ -33,3 +33,46 @@ export interface Tuning {
   noteNames: NoteName[];
   isPreset: boolean;
 }
+
+// ----- 
+// Chord data (the formulas and the matches the app finds)
+
+// Chord category: a rough grouping for each chord type, used when ranking matches
+export type ChordCategory =
+  | 'triad'     // Identified by the root, 3rd, and 5th notes
+  | 'seventh'   // Identified by the root, 3rd, 5th, and 7th notes
+  | 'extended'  // Identified by the root, 3rd, 5th, 7th, 9th, and 11th notes
+  | 'suspended' // Identified by the root, 2nd or 4th
+  | 'added_tone' // Identified by the root, 3rd, 5th, and 6th
+  | 'altered'   // Identified by the root, 3rd, 5th, and 6th
+  | 'power'   // Identified by the root and 5th only
+  | 'other';    // Unrecognized chord
+
+// Match quality: how well the tapped notes fit a chord
+export type MatchQuality = 'perfect' | 'partial';
+
+// Chord type: the formula for one kind of chord
+export interface ChordType {
+  name: string;                 // full name, for example: Major 7th
+  symbol: string;               // short symbol added after the root, for example maj7
+  intervals: number[];          // every note of the chord, as gaps in semitones from the root
+  essentialIntervals: number[]; // the notes that must be present for the chord to count
+  category: ChordCategory;  // 
+}
+
+// Chord match: one chord the matcher thinks the selected notes could be
+export interface ChordMatch {
+  rootPitchClass: PitchClass;   // the root note as a pitch class
+  rootName: NoteName;           // the root note name
+  chordType: ChordType;         // which formula matched
+  fullName: string;             // the full chord name, for example Cmaj7
+  matchQuality: MatchQuality;   // perfect or partial
+  matchedIntervals: number[];   // chord notes that were found in the selection
+  missingIntervals: number[];   // chord notes that were not found
+  extraNotes: number[];         // selected notes that are not part of the chord
+  bassNote?: NoteName;          // the lowest note name, only set for inversions
+  bassPitchClass?: PitchClass;  // the lowest note as a pitch class, only for inversions
+  isInversion: boolean;         // true when the lowest note is not the root
+  inversionNumber?: number;     // 1st, 2nd, or 3rd inversion, when it can be worked out
+  score: number;                // used to rank the matches against each other
+}

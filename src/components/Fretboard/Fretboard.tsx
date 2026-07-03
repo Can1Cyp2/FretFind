@@ -1,4 +1,9 @@
-import React, { useCallback, useState } from 'react';
+/* This file draws the whole fretboard and reports taps back to the app. The
+   selected notes are passed in as props (the app owns them now, so the fretboard
+   and the chord results always agree on what is selected). When a fret is tapped,
+   the fretboard calls onFretPress and lets the app update the selection. */
+
+import React from 'react';
 import { View, ScrollView } from 'react-native';
 import { FretRow } from './FretRow';
 import { FretNumber } from './FretNumber';
@@ -7,64 +12,29 @@ import {
   fretboardStyles,
   FRET_NUMBER_COL_WIDTH,
 } from '../../styles/fretboardStyles';
-import { STANDARD_TUNING } from '../../constants/tunings';
-import { TOTAL_FRETS, NUM_STRINGS } from '../../constants/notes';
-import { getPitchClassAtFret } from '../../engine/noteUtils';
-import { FretSelection, PitchClass, StringIndex } from '../../types';
+import { TOTAL_FRETS } from '../../constants/notes';
+import { FretSelection, PitchClass, StringIndex, Tuning } from '../../types';
 
-export function Fretboard() {
-  // Selection state: one chosen fret (or null for none) per string
-  const [selections, setSelections] = useState<(FretSelection | null)[]>(
-    () => Array(NUM_STRINGS).fill(null),
-  );
+interface Props {
+  selections: (FretSelection | null)[]; // one selected fret (or null) per string
+  tuning: Tuning;                        // the open notes of each string
+  showOctaves?: boolean;
+  preferFlats?: boolean;
+  onFretPress: (stringIndex: StringIndex, fret: number) => void; // a fret was tapped
+  onFillOpenNotes: () => void;           // the 'O' button at the nut was tapped
+}
 
-  const currentTuning = STANDARD_TUNING;
-  const openNotes = currentTuning.notes as PitchClass[];
-  const showOctaves = false;
-  const preferFlats = false;
+export function Fretboard({
+  selections,
+  tuning,
+  showOctaves = false,
+  preferFlats = false,
+  onFretPress,
+  onFillOpenNotes,
+}: Props) {
+  const openNotes = tuning.notes as PitchClass[];
 
-  // Tap toggles a fret: tapping the same fret again clears that string,
-  // otherwise it selects the new fret (and works out the note it makes)
-  const selectFret = useCallback(
-    (stringIndex: StringIndex, fret: number) => {
-      setSelections(prev => {
-        const next = [...prev];
-        const current = prev[stringIndex];
-        if (current && current.fret === fret) {
-          next[stringIndex] = null;
-        } else {
-          const pitchClass = getPitchClassAtFret(
-            currentTuning.notes[stringIndex] as PitchClass,
-            fret,
-          );
-          next[stringIndex] = { stringIndex, fret, pitchClass };
-        }
-        return next;
-      });
-    },
-    [currentTuning.notes],
-  );
-
-  // When the fretboard is tapped, select that fret for the string, or clear it if its already selected
-  const handleFretPress = useCallback(
-    (stringIndex: StringIndex, fret: number) => {
-      selectFret(stringIndex, fret);
-    },
-    [selectFret],
-  );
-
-  // Fill in the open notes 
-  const handleFillOpenNotes = useCallback(() => {
-    setSelections(prev =>
-      prev.map((selection, stringIndex) => {
-        if (selection) return selection;
-        const si = stringIndex as StringIndex;
-        const pitchClass = getPitchClassAtFret(currentTuning.notes[si] as PitchClass, 0);
-        return { stringIndex: si, fret: 0, pitchClass };
-      }),
-    );
-  }, [currentTuning.notes]);
-
+  // Build the list of fret numbers, 0 (the nut) up to the last fret.
   const frets: number[] = [];
   for (let f = 0; f <= TOTAL_FRETS; f++) frets.push(f);
 
@@ -75,8 +45,8 @@ export function Fretboard() {
         <View style={fretboardStyles.stringLabelsRowWrapper}>
           <View style={{ width: FRET_NUMBER_COL_WIDTH }} />
           <StringLabels
-            noteNames={currentTuning.noteNames}
-            pitchClasses={currentTuning.notes as PitchClass[]}
+            noteNames={tuning.noteNames}
+            pitchClasses={tuning.notes as PitchClass[]}
             preferFlats={preferFlats}
             showOctaves={showOctaves}
           />
@@ -93,14 +63,14 @@ export function Fretboard() {
               <FretNumber
                 fret={f}
                 isNut={f === 0}
-                onOpenNotesPress={f === 0 ? handleFillOpenNotes : undefined}
+                onOpenNotesPress={f === 0 ? onFillOpenNotes : undefined}
               />
               <FretRow
                 fret={f}
                 isNut={f === 0}
                 openNotes={openNotes}
                 selections={selections}
-                onFretPress={handleFretPress}
+                onFretPress={onFretPress}
                 showOctaves={showOctaves}
                 preferFlats={preferFlats}
               />
