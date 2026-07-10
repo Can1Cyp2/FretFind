@@ -634,3 +634,107 @@ For future development (audio playback, when I play notes using my own midi soun
 
 The following checklist item will be pushed back past July 3. I verified the matching logic by hand this deliverable (C major, Cmaj7, C7, Am, and the C/E inversion all name correctly), but the real runnable tests are still to be written.
 - [ ] Add coded tests for the chord matcher. (planned for the next deliverable, in `src/tests/d3-chord-matcher-tests.ts`)
+
+
+
+
+---
+
+# Deliverable 4 (d4): Chord Matcher Tests
+Date range: July 3, 2026 - July 10, 2026
+
+Added coded test cases for the chord matcher, replacing the manual checks I did in d3. The full plan for this deliverable is in `documents/d4-jul3-jul10/d4-July10th_plan.md`
+
+## What This Deliverable Covers
+The July 10 goal in the plan had three parts: the coded tests, small refinements (octaves, sharp and flat preference, an adjustable results table), and the App Store and Google Play Store profiles.
+
+Important note: after speaking with the course instructor (both the formal and informal supervisors), I am focusing more on app features, refinement, and testing rather than the store approval all (but specifically this) deliverable. So the store profiles are not a mandatory requirement here, though I was still able to complete them, and the actual focus for this deliverable ended up being the tests.
+
+The tests were the main goal, the coded tests were pushed back from d3, and they are now complete.
+
+## Deliverable 4 Timeline
+
+| Date | Deliverable | Status | Output |
+| --- | --- | --- | --- |
+| July 3-4, 2026 | Plan document | Complete | `documents/d4-jul3-jul10/d4-July10th_plan.md` |
+| July 3-9, 2026 | Chord matcher test file, every chord type | Complete | `src/tests/d4-chord-matcher-tests.ts` |
+| July 5-9, 2026 | Edge case tests | Complete | `src/tests/d4-chord-matcher-tests.ts` |
+| July 5-9, 2026 | Naming and preference tests | Complete | `src/tests/d4-chord-matcher-tests.ts` |
+| July 5-9, 2026 | test:chords script | Complete | `package.json` |
+| July 9, 2026 | Test output screenshot | Complete | `documents/d4-jul3-jul10/d4-ChordMatchingTestOutput.png` |
+| July 10, 2026 | Show octaves switch | (Code complete, but not in UI) UI Pushed back | Planned for d5 |
+| July 10, 2026 | Sharp or flat preference switch | (Code complete, but not in UI) UI Pushed back  | Planned for d5 |
+| July 10, 2026 | Adjustable results table | (Code complete, but not in UI) UI Pushed back  | Planned for d5 |
+| July 4-10, 2026 | App Store / Google Play Store profiles | Complete| Not mandatory this deliverable, but still completed basic setup |
+
+## Current Scope: (d4)
+This deliverable adds one new file and one small script addition, everything this deliverable is testing and verifying the d3 logic rather than adding new production code. The only other small note is that I added the app store and google play store profiles, and connected them to the project, seen in app.json.
+
+New files:
+src/tests/d4-chord-matcher-tests.ts
+
+Changed files:
+package.json - adds the test:chords script for easy running
+
+Other files:
+```txt
+documents/d4-jul3-jul10/d4-July10th_plan.md
+documents/d4-jul3-jul10/d4-ChordMatchingTestOutput.png
+documents/d4-jul3-jul10/d4-img1-F_Chord.JPG
+documents/d4-jul3-jul10/d4-img2-Em_Chord.JPG
+documents/d4-jul3-jul10/d4-img3-C_Chord_Ebass.JPG
+```
+
+## Chord Matcher Tests
+The tests are plain TypeScript, so they compile and run in the console the same way the d1 mock tests do. If a check fails, the script throws an error and the command fails.
+
+The tests cover three things:
+1. Every chord type in the formula table: One known example each, with the roots varied on purpose (C, Am, Bdim, Faug, E5, Dsus2, Asus4, G6, Em6, G7, Cmaj7, Dm7, CmMaj7, Bdim7, F#m7b5, Caug7, E7sus4, A7sus2), to show the matcher works from any root, not just C.
+(Images in the d4 folder show the app naming an F chord, an Em chord, and a C/E inversion, matching and adding onto the test cases to reveal how the matcher works in the app itself)
+
+2. Edge cases:
+fewer than 2 notes       -> no matches are returned
+duplicate notes           -> repeats count once (the open C shape still names C)
+inversions / slash chords -> C major with E in the bass names C/E (1st inversion), G major with D in the bass names G/D (2nd inversion)
+ambiguous shapes          -> Am7 and C6 share the same four notes, Am7 ranks first with A in the bass, C6/A is still listed
+no sensible match         -> a tight note cluster returns no perfect matches instead of a wrong answer
+two note power chord    -> C and G alone name C5 (meaning the fifth is essential but the third is not, its a power chord)
+missing optional notes    -> C and E alone still name C as perfect, since the fifth is not essential
+
+
+3. Naming and preference handling (preferFlats is not in the UI yet, these tests verify the code behind it before the switch is added):
+preferFlats true  -> Bb D F names Bb
+preferFlats false -> the same notes name A#
+no preference     -> falls back to the more common name for each root (Bb, F#)
+
+Each check prints its case and result to the console, so the output is verification.
+
+Run:
+```bash
+npm run test:chords
+```
+
+## Screenshots
+Screenshots for this deliverable are in `documents/d4-jul3-jul10/` both the console test output and the app itself matching chords on real fretboard shapes:
+d4-ChordMatchingTestOutput.png -> the full test:chords run, every check passing in the console
+d4-img1-F_Chord.JPG            -> the app naming an F chord shape on the fretboard
+d4-img2-Em_Chord.JPG           -> the app naming an Em chord shape on the fretboard
+d4-img3-C_Chord_Ebass.JPG      -> C major shape with E in the bass: C/E
+
+## Small Refinements and Store Profiles
+None of these were reached this deliverable. The octaves switch, the sharp and flat preference switch, and the adjustable results table are pushed to d5. The App Store and Google Play Store profiles are no longer a mandatory part of this deliverable, per the instructor, so I did not spend time on them this round.
+
+## Done By July 10, 2026 checklist (checkmarks indicate complete, X marks incomplete):
+- [x] Add the chord matcher test file with one example of every chord type in the table. (found in `src/tests/d4-chord-matcher-tests.ts`)
+- [x] Add the edge case tests (too few notes, duplicates, inversions, ambiguous shapes, no match, power chord, missing optional notes). (found in `src/tests/d4-chord-matcher-tests.ts`)
+- [x] Add the naming preference tests (sharps, flats, and the default spelling). (found in `src/tests/d4-chord-matcher-tests.ts`)
+- [x] Add the test:chords script and confirm the whole run passes. (found in `package.json`)
+- [x] Add images of the tests being run (both console and UI) and output of the correct results.
+- [x]Set up the App Store and Google Play app profiles and fill out the forms.
+
+The following checklist items are pushed back past July 10 to d5:
+
+In the UI (the code is already written so that the logic works with these preferences, but the switches are not in the UI):
+- [ ] Add the show octaves switch.
+- [ ] Add the sharp or flat preference switch.
+- [ ] Make the results table adjustable.

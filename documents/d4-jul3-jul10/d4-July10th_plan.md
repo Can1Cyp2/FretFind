@@ -95,11 +95,12 @@ src/styles/resultStyles.ts
 
 ## Checklist
 
-- [ ] Add the chord matcher test file with one example of every chord type in the table
-- [ ] Add the edge case tests (too few notes, duplicates, inversions, ambiguous shapes, no match, power chord, missing optional notes).
-- [ ] Add the naming preference tests (sharps, flats, and the default spelling).
-- [ ] Add the test:chords script and confirm the whole run passes.
+- [X] Add the chord matcher test file with one example of every chord type in the table
+- [X] Add the edge case tests (too few notes, duplicates, inversions, ambiguous shapes, no match, power chord, missing optional notes).
+- [X] Add the naming preference tests (sharps, flats, and the default spelling).
+- [X] Add the test:chords script and confirm the whole run passes.
 - [ ] Add the show octaves switch.
 - [ ] Add the sharp or flat preference switch.
 - [ ] Make the results table adjustable.
-- [ ] Set up the App Store and Google Play app profiles and fill out the forms.
+- [X] Add images of the tests being run (both console and UI) and output of the correct results.
+- [X] Set up the App Store and Google Play app profiles and fill out the forms.
