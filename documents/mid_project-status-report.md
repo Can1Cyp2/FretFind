@@ -188,6 +188,6 @@ The remaining challenges so far have been environmental rather than conceptual: 
 The current overall challenge going forward is presenting the theory clearly to a beginner in the music theory breakdown display, and adding the backend cleanly without letting the core app depend on it.
 
 ## Closing
-At this mid-point: the core of FretFind is built, tested, and working: a user can tap notes they are playing on a virtual 22-fret fretboard and immediately see what chord they form. The remaining deliverables expand the range of recognized chords, explain the theory behind each chord, add sound and a chord progression builder and add an optional backend for accounts and cloud saved progressions.
+At this mid-point: the core of FretFind is built, tested, and working: a user can tap notes they are playing on a virtual 22-fret fretboard and immediately see what chords they form. The remaining deliverables expand the range of recognized chords, explain the theory behind each chord, add sound and a chord progression builder and add an optional backend for accounts and cloud saved progressions.
 
 I am beginning deliverable d5 now and the outline above sets out the plan for the deliverables that follow, through to the final submission and the seminar poster. Any further changes to that plan will be documented in the progress file and in the reports that follow (as needed).
