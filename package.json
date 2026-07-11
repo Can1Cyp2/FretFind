@@ -20,7 +20,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "mock:progression": "tsc --project tsconfig.mock.json && node dist/mock/src/scripts/mockProgression.js",
-    "test:mock": "tsc --project tsconfig.mock.json && node dist/mock/src/tests/basicControllers.mock.test.js"
+    "test:mock": "tsc --project tsconfig.mock.json && node dist/mock/src/tests/basicControllers.mock.test.js",
+    "test:chords": "tsc --project tsconfig.mock.json && node dist/mock/src/tests/d4-chord-matcher-tests.js"
   },
   "private": true
 }
