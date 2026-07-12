@@ -51,7 +51,7 @@ Each new chord type also gets a test case added to `src/tests/d4-chord-matcher-t
 Right now tapping a result does nothing, it just shows the chord name, its notes, and the perfect or partial badge. This deliverable adds a detail view that opens when a result is tapped, and explains the theory behind the chord in plain language:
 
 - The notes of the chord.
-- The formula, shown as interval names (R, 3, 5, b7, and so on), with the essential notes marked apart from the optional ones.
+- The formula, shown as interval names (R, 3, 5, b7, and so on) with the essential notes marked apart from the optional ones.
 - The intervals listed out with their full names (Root, Major 3rd, Perfect 5th, Minor 7th) and the note each one lands on
 - The voicing, when the chord is an inversion or a slash chord (which note is in the bass).
 - Short plain-language explanations for the chord and for each interval, so someone who does not know theory can still learn from it.
@@ -78,7 +78,7 @@ Planned sections:
 - Technical design: a summary of the reverse chord matcher, the main technical idea of the project.
 - What is complete and what remains.
 - Testing summary: the coded chord matcher tests from d4 as evidence the logic is correct.
-- Citations: for each source, the exact idea I took from it and the file or logic it shaped, reviewed properly rather than listed loosely.
+- Citations: for each source, the exact idea I took from it and the file or logic it shaped, reviewed properly rather than listed loosely like I did previously.
 - Issues faced, issues foreseen, and challenges so far.
 - Closing: that I am beginning d5 now, and the plan for the future. The report does not go into d5 detail beyond this.
 
