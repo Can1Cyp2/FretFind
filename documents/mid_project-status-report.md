@@ -101,8 +101,9 @@ d5 - By July 17, 2026 (the current deliverable):
 Expanded chord-identification system completed, including support for inversions, enharmonic equivalents, duplicate notes, suspended chords, added-tone chords, and common extended chords. Music theory breakdown display/information completed.
 
 d6 - By July 24, 2026:
-Audio playback and chord progression builder implemented. User interface refined, meaning bug fixes, visual improvements and usability enhancements. The backend will be completed with account logging in and chord progression saving to cloud storage. Testing begins for the more difficult notes implemented last milestone (d5) for accuracy, edge cases, and usability. 
-- Implement the backend, including account creation and login, and cloud saved progressions. The front-end and back-end will be integrated so that the app works as a single application, but may be mixed into the d7 deliverable if time is tight.
+Audio playback and chord progression builder implemented. User interface refined, meaning bug fixes, visual improvements and usability enhancements. Testing begins for the more difficult notes implemented last milestone (d5) for accuracy, edge cases, and usability.
+The backend will be completed with accounts and saving to cloud storage:
+      Implement the backend, including account creation and login, and cloud saved progressions. The front-end and back-end will be integrated so that the app works as a single application, but may be mixed into the d7 deliverable if time is tight.
 
 d7 - By July 31, 2026:
 Finish backend implementation. Draft final documentation completed. Main implementation completed except for minor fixes, polish, and final testing. Send the final version of the app to the App Store and Google Play Store, for full testability. If this is not possible, I will request friends, family and other volunteers to test the app on their own devices, and report back any issues they find. I will also request that they test the app on both iOS and Android devices, so that I can ensure that the app works well on both platforms.
@@ -128,7 +129,7 @@ The chord matcher is covered by coded tests in `src/tests/d4-chord-matcher-tests
 
 They cover three areas:
 - Every chord type in the table, one known example each, with the roots varied so the matcher is shown to work from any root and not just from C.
-- Edge cases: too few notes, duplicate notes, first and second inversions, ambiguous shapes (Am7, versus C6), a note cluster that should produce no perfect match, the two-note power chord, and a chord missing its optional fifth.
+- Edge cases: too few notes, duplicate notes, first and second inversions, ambiguous shapes (Am7 versus C6), a note cluster that should produce no perfect match, the two-note power chord, and a chord missing its optional fifth.
 - Naming and preference handling: sharps, flats, and the default spelling.
 
 The full suite passes. A screenshot of a passing run, along with screenshots of the app naming real chord shapes, is in documents/d4-jul3-jul10/. These coded tests replace the manual checks I relied on in d3.
@@ -146,7 +147,7 @@ The following sources informed specific parts of the implementation. For each on
       *https://www.youtube.com/watch?v=dXg8eCHNaTE*
 
 For the audio playback planned in a later deliverable, I have found these sources that I believe will be useful for implementing the tone generator and note to frequency playback:
-- Playing notes (Code.org Maker Toolkit): a note-playing method that takes a note name and octave (for example "C4" or "D#5") rather than a raw frequency. This matches how the app already represents a note as a pitch class plus an octave, and is the model I plan to follow for playing selected notes.
+- Playing notes (Code.org): a note-playing method that takes a note name and octave (for example "C4" or "D#5") rather than a raw frequency. This matches how the app already represents a note as a pitch class plus an octave, and is the model I plan to follow for playing selected notes.
       *https://studio.code.org/docs/concepts/maker-toolkit/playing-notes/*
 
 - Calculating the frequency of a note (Reddit): the standard equal-temperament formula, where each semitone multiplies the frequency by the twelfth root of two, with A4 fixed at 440 Hz. This is the math the planned tone generator will likely use to turn a note into a sound.
