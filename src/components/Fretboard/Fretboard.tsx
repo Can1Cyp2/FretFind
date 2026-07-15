@@ -13,6 +13,7 @@ import {
   FRET_NUMBER_COL_WIDTH,
 } from '../../styles/fretboardStyles';
 import { TOTAL_FRETS } from '../../constants/notes';
+import { getOpenStringMidi } from '../../constants/tunings';
 import { FretSelection, PitchClass, StringIndex, Tuning } from '../../types';
 
 interface Props {
@@ -21,7 +22,7 @@ interface Props {
   showOctaves?: boolean;
   preferFlats?: boolean;
   onFretPress: (stringIndex: StringIndex, fret: number) => void; // a fret was tapped
-  onFillOpenNotes: () => void;           // the 'O' button at the nut was tapped
+  onFillOpenNotes: () => void;           // the 'O' button at the nut was tapped, which fills in all open notes
 }
 
 export function Fretboard({
@@ -34,7 +35,11 @@ export function Fretboard({
 }: Props) {
   const openNotes = tuning.notes as PitchClass[];
 
-  // Build the list of fret numbers, 0 (the nut) up to the last fret.
+  // The MIDI number of each open string, so the fret rows can work out which octave any fretted note lands in when the octave labels are switched on.
+      // (current) d5 - This will also help finding which sound to play when the user wants to hear the note/chord but that is for a later deliverable. 
+  const baseMidi = getOpenStringMidi(tuning);
+
+  // Build the list of fret numbers, 0 (the nut) up to the last fret:
   const frets: number[] = [];
   for (let f = 0; f <= TOTAL_FRETS; f++) frets.push(f);
 
@@ -49,6 +54,7 @@ export function Fretboard({
             pitchClasses={tuning.notes as PitchClass[]}
             preferFlats={preferFlats}
             showOctaves={showOctaves}
+            octaves={tuning.octaves}
           />
         </View>
 
@@ -71,6 +77,7 @@ export function Fretboard({
                 openNotes={openNotes}
                 selections={selections}
                 onFretPress={onFretPress}
+                baseMidi={baseMidi}
                 showOctaves={showOctaves}
                 preferFlats={preferFlats}
               />

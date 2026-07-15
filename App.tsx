@@ -1,8 +1,10 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { SafeAreaView, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { Pressable, SafeAreaView, StatusBar, Text, View } from 'react-native';
 import { Fretboard } from './src/components/Fretboard/Fretboard';
 import { ResultsPanel } from './src/components/Results/ResultsPanel';
+import { SettingsModal } from './src/components/common/SettingsModal';
 import { COLORS } from './src/styles/colors';
+import { commonStyles } from './src/styles/commonStyles';
 import { STANDARD_TUNING } from './src/constants/tunings';
 import { NUM_STRINGS } from './src/constants/notes';
 import { getPitchClassAtFret } from './src/engine/noteUtils';
@@ -16,8 +18,17 @@ export default function App() {
   );
 
   const currentTuning = STANDARD_TUNING;
-  const showOctaves = false;
-  const preferFlats = false;
+
+  // Display preferences, both flipped from the Options sheet:
+  // Show octaves: when on, note labels include the octave number (E2 instead of just E),
+  // so the user can see that the two E strings are the same note but two octaves apart.
+  // Prefer flats: when on, notes are spelt with flats (Bb) instead of sharps (A#),
+  // the same sounding notes just written the way the user prefers to read them.
+  const [showOctaves, setShowOctaves] = useState(false);
+  const [preferFlats, setPreferFlats] = useState(false);
+
+  // Whether the Options sheet is open
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Tap toggles a fret: tapping the same fret again clears that string,
   // otherwise it selects the new fret (and works out the note it makes).
@@ -60,10 +71,20 @@ export default function App() {
   const activeCount = selections.filter(Boolean).length;
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={commonStyles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor={COLORS.bg} />
-      <View style={styles.header}>
-        <Text style={styles.title}>FretFind</Text>
+      <View style={commonStyles.header}>
+        <Text style={commonStyles.headerTitle}>FretFind</Text>
+        <View style={commonStyles.headerActions}>
+          {/* Options button: opens the settings sheet with the display switches */}
+          <Pressable
+            onPress={() => setIsSettingsOpen(true)}
+            style={commonStyles.headerActionButton}
+          >
+            <Text style={{ color: COLORS.textPrimary, fontSize: 14, fontWeight: '800' }}>⚙</Text>
+            <Text style={commonStyles.headerActionText}>Options</Text>
+          </Pressable>
+        </View>
       </View>
       <Fretboard
         selections={selections}
@@ -74,23 +95,14 @@ export default function App() {
         onFillOpenNotes={handleFillOpenNotes}
       />
       <ResultsPanel matches={chordResults} activeCount={activeCount} preferFlats={preferFlats} />
+      <SettingsModal
+        visible={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        showOctaves={showOctaves}
+        preferFlats={preferFlats}
+        onToggleOctaves={() => setShowOctaves(prev => !prev)}
+        onTogglePreferFlats={() => setPreferFlats(prev => !prev)}
+      />
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: COLORS.bg,
-  },
-  header: {
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  title: {
-    color: COLORS.textPrimary,
-    fontSize: 18,
-    fontWeight: '800',
-    letterSpacing: 1,
-  },
-});
