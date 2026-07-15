@@ -94,7 +94,7 @@ d5 (Jul 10 - Jul 17): Expanded chords, theory breakdown display, refinements,
                       comprehensive mid-project report                          [this one]
 ... (Continues in the mid-project report in a more thorough manner)
 
-The App Store and Google Play Store profiles are still optional and can be set up in the background, per the instructor, they are no longer a hard requirement of any single deliverable.
+The App Store and Google Play Store profiles are still optional and can be set up in the background, per the instructor, they are no longer a hard requirement of any single deliverable. Though, I have set up the profiles and connected them to the app, as seen in app.json.
 
 ## New And Changed Files
 
@@ -139,7 +139,7 @@ The refinements pushed forward from d4 come first, since they were already due b
 - [X] Add the added-tone chord formulas to the chord table (9th chords, 11th chords, 6/9 chords, and such)
 - [X] Add the common extended chord formulas to the chord table (9th, 11th, 13th, and their minor and major variants)
 - [X] Add a third match grade (weak, in red) below perfect and partial for weaker matches, so results are graded in three tiers instead of two.
-- [ ] Add a test case for each new chord type and confirm the whole run passes.
+- [X] Add a test case for each new chord type and confirm the whole run passes.
 - [ ] Add the music theory breakdown display for a tapped chord.
 - [ ] Add the plain-language theory explanations.
 - [ ] Write the comprehensive mid-project report.

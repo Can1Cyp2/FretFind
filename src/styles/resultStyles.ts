@@ -1,4 +1,4 @@
-/* This file holds the styles for the results area under the fretboard: the panel
+/* Styles for the results area under the fretboard: the panel
    itself, each chord result row, and the perfect or partial badge. The colours
    come from the shared colour palette so the results match the rest of the app. */
 
@@ -6,16 +6,35 @@ import { StyleSheet } from 'react-native';
 import { COLORS } from './colors';
 
 export const resultStyles = StyleSheet.create({
-  // The results panel that sits under the fretboard
+  // The results panel that sits under the fretboard. No fixed height here:
+  // the panel sets its own height, since the user can drag it bigger or smaller.
   container: {
-    height: 240,
     backgroundColor: COLORS.bgCard,
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
     paddingHorizontal: 12,
-    paddingTop: 10,
   },
-  // Shown when there is nothing to match yet (fewer than two notes, or no match)
+
+  // The drag handle at the top of the panel: a small grab bar with an arrow hint under it
+  dragHandleRow: {
+    alignItems: 'center',
+    paddingTop: 8,
+    paddingBottom: 6,
+  },
+  dragHandleBar: {
+    width: 48,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: COLORS.borderLight,
+  },
+  dragHandleHint: {
+    color: COLORS.textMuted,
+    fontSize: 9,
+    fontWeight: '600',
+    marginTop: 2,
+  },
+
+  // Shown when there is nothing to match yet (fewer than two notes, or no match):
   emptyText: {
     color: COLORS.textMuted,
     fontSize: 13,
@@ -24,6 +43,7 @@ export const resultStyles = StyleSheet.create({
     paddingHorizontal: 24,
     lineHeight: 19,
   },
+
   // The Results heading row, with a small count on the right
   header: {
     flexDirection: 'row',
@@ -43,6 +63,7 @@ export const resultStyles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
   },
+
   // One chord result row
   card: {
     flexDirection: 'row',
@@ -56,6 +77,7 @@ export const resultStyles = StyleSheet.create({
   },
   cardPerfect: { borderColor: COLORS.perfectBorder },
   cardPartial: { borderColor: COLORS.partialBorder },
+  cardWeak: { borderColor: COLORS.weakBorder },
   chordName: {
     color: COLORS.textPrimary,
     fontSize: 18,
@@ -73,7 +95,7 @@ export const resultStyles = StyleSheet.create({
     fontSize: 11,
     marginTop: 3,
   },
-  // The perfect or partial badge on the right of a row
+  // The perfect or partial badge on the right of a row:
   badge: {
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -88,6 +110,10 @@ export const resultStyles = StyleSheet.create({
     backgroundColor: COLORS.partialBg,
     borderColor: COLORS.partialBorder,
   },
+  badgeWeak: {
+    backgroundColor: COLORS.weakBg,
+    borderColor: COLORS.weakBorder,
+  },
   badgeText: {
     fontSize: 11,
     fontWeight: '800',
@@ -95,4 +121,5 @@ export const resultStyles = StyleSheet.create({
   },
   badgeTextPerfect: { color: COLORS.perfect },
   badgeTextPartial: { color: COLORS.partial },
+  badgeTextWeak: { color: COLORS.weak },
 });
