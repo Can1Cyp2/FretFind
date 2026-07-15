@@ -28,13 +28,19 @@ export const COLORS = {
   accentGlow: 'rgba(108, 99, 255, 0.35)',
 
   // Interactions:
-  // perfect matches, partial matches, and wrong notes colours + more
+  // perfect matches, partial matches, weak matches and wrong notes colours:
   perfect: '#34D399',
   perfectBg: 'rgba(52, 211, 153, 0.12)',
   perfectBorder: 'rgba(52, 211, 153, 0.28)',
   partial: '#FBBF24',
   partialBg: 'rgba(251, 191, 36, 0.10)',
   partialBorder: 'rgba(251, 191, 36, 0.22)',
+
+  // Weak matches: barely half the must have notes are there, so this gets the same red family as danger, 
+  // but its softer shade so it reads as 'shaky guess' rather than 'something is totally wrong'
+  weak: '#F87171',
+  weakBg: 'rgba(248, 113, 113, 0.10)',
+  weakBorder: 'rgba(248, 113, 113, 0.24)',
   danger: '#EF4444',
   dangerBg: 'rgba(239, 68, 68, 0.12)',
 

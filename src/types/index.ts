@@ -31,6 +31,7 @@ export interface Tuning {
   name: string;
   notes: PitchClass[];
   noteNames: NoteName[];
+  octaves: number[]; // the octave each open string sounds in (standard tuning is E2 A2 D3 G3 B3 E4), used for the optional octave labels
   isPreset: boolean;
 }
 
@@ -48,8 +49,12 @@ export type ChordCategory =
   | 'power'   // Identified by the root and 5th only
   | 'other';    // Unrecognized chord
 
-// Match quality: how well the tapped notes fit a chord
-export type MatchQuality = 'perfect' | 'partial';
+// Match quality: how well the tapped notes fit a chord. Perfect has every "must have"
+// note and nothing extra. Partial is close, missing at most a note or two but still
+// has every essential note (or almost does, for the bigger extended chords). Weak
+// is shakier still, roughly half of the must-have notes are there, so it is a real
+// possibility but not a confident guess.
+export type MatchQuality = 'perfect' | 'partial' | 'weak';
 
 // Chord type: the formula for one kind of chord
 export interface ChordType {

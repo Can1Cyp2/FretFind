@@ -123,7 +123,7 @@ function evaluateMatch(
   };
 }
 
-// Decides how well the notes fit: 'perfect', 'partial', or null (back end logic for the front end:
+// Decides how well the notes fit: 'perfect', 'partial', 'weak', or null (back end logic for the front end:
 function classifyMatch(
   missingEssential: number[],
   extraNotes: number[],
@@ -140,14 +140,18 @@ function classifyMatch(
   // Perfect: every musthave note is there and nothing extra was added
   if (allEssentialPresent && noExtraNotes) return 'perfect';
 
-  // Partial: at least half of the must have notes are there, with at most one extra note
-  const essentialCoverage =
-    (chordType.essentialIntervals.length - missingEssential.length) / chordType.essentialIntervals.length;
-  if (essentialCoverage >= 0.5 && extraNotes.length <= 1) return 'partial';
-
-  // For larger chords (five notes or more), allow a little more leeway so that they can still be recognized even if the user missed one or two notes. 
+  // For larger chords (five notes or more), allow a little more leeway so that they can still be recognized even if the user missed one or two notes.
   // This is important for extended chords, which are often played with only four notes
   if (chordType.intervals.length >= 5 && allEssentialPresent && extraNotes.length <= 2) return 'partial';
+
+  // Partial: every must have note is there, just one extra note came along for the ride
+  if (allEssentialPresent && extraNotes.length <= 1) return 'partial';
+
+  // Weak: at least half of the must have notes made it, so the shape is a real possibility, 
+  // but with a must have note actually missing it is a shakier guess than a partial match, so it gets told apart with its own grade (weak):
+  const essentialCoverage =
+    (chordType.essentialIntervals.length - missingEssential.length) / chordType.essentialIntervals.length;
+  if (essentialCoverage >= 0.5 && extraNotes.length <= 1) return 'weak';
 
   return null;
 }
@@ -164,28 +168,30 @@ function scoreMatch(
 ): number {
   let score = 0;
 
-  // A perfect fit is worth much more than a partial one
+  // A perfect fit is worth much more than a partial one, and a weak one less so,
+  // so the ranking always puts the more confident reading of the notes on top
   if (quality === 'perfect') score += 75;
   else if (quality === 'partial') score += 35;
+  else if (quality === 'weak') score += 15;
 
-  // Having the root present, and having it as the lowest note, both help
+  // Having the root present, and having it as the lowest note, both help:
   if (rootInSelection) score += 8;
   if (rootIsBass) score += 7;
 
-  // Reward having no extra notes, and lightly punish each extra note
+  // Reward having no extra notes, and lightly punish each extra note:
   if (extraNotesCount === 0) score += 5;
   else score -= extraNotesCount * 3;
 
-  // How much of the chord is actually there
+  // How much of the chord is actually there:
   const completeness = matchedCount / totalChordTones;
   score += Math.round(completeness * 10);
 
-  // Simpler chords win ties (a plain triad usually reads better than a fancy name for the same notes)
+  // Simpler chords win ties (a plain triad usually reads better than a fancy name for the same notes):
   if (totalChordTones <= 3) score += 5;
   else if (totalChordTones <= 4) score += 3;
   else if (totalChordTones <= 5) score += 1;
 
-  // Small nudge so the most common chord families rank a little higher
+  // Small nudge so the most common chords rank a little higher:
   if (chordType.category === 'triad') score += 3;
   else if (chordType.category === 'power') score += 2;
   else if (chordType.category === 'seventh') score += 1;
