@@ -109,6 +109,25 @@ function testEveryChordType(): void {
   assertBestMatch(['E', 'A', 'B', 'D'], 'E7sus4', '7sus4');
   assertBestMatch(['A', 'B', 'E', 'G'], 'A7sus2', '7sus2');
 
+  // Added-tone chords (a triad or 6th chord with one extra colour note dropped in, no 7th):
+  assertBestMatch(['C', 'D', 'E', 'G'], 'Cadd9', 'Add 9');
+  assertBestMatch(['C', 'D', 'Eb', 'G'], 'Cmadd9', 'Minor Add 9');
+  assertBestMatch(['C', 'E', 'F', 'G'], 'Cadd11', 'Add 11');
+  assertBestMatch(['C', 'D', 'E', 'G', 'A'], 'C6/9', '6/9');
+  assertBestMatch(['C', 'D', 'Eb', 'G', 'A'], 'Cm6/9', 'Minor 6/9');
+
+  // Extended chords (seventh chords stacked further, up to the 9th, 11th, or 13th):
+  assertBestMatch(['C', 'D', 'E', 'Bb'], 'C9', 'Dominant 9th');
+  assertBestMatch(['C', 'D', 'E', 'B'], 'Cmaj9', 'Major 9th');
+  assertBestMatch(['C', 'D', 'Eb', 'Bb'], 'Cm9', 'Minor 9th');
+  // C11 needs the 9th included too, otherwise root + 11th + b7 alone is the exact
+  // same notes as C7sus4 and reads as that instead (checked this by hand first)
+  assertBestMatch(['C', 'D', 'F', 'Bb'], 'C11', 'Dominant 11th');
+  assertBestMatch(['C', 'Eb', 'F', 'Bb'], 'Cm11', 'Minor 11th');
+  assertBestMatch(['C', 'E', 'A', 'Bb'], 'C13', 'Dominant 13th');
+  assertBestMatch(['C', 'Eb', 'A', 'Bb'], 'Cm13', 'Minor 13th');
+  assertBestMatch(['C', 'E', 'A', 'B'], 'Cmaj13', 'Major 13th');
+
   // if the above tests pass:
   console.log('Every chord type test passed.\n'); 
 }
@@ -159,7 +178,19 @@ function testEdgeCases(): void {
     cluster.every(m => m.matchQuality !== 'perfect'),
     'C C# D should not produce any perfect match.',
   );
-  console.log(` C C# D (cluster) -> no perfect matches (${cluster.length} partial)`);
+  const clusterPartial = cluster.filter(m => m.matchQuality === 'partial').length;
+  const clusterWeak = cluster.filter(m => m.matchQuality === 'weak').length;
+  console.log(` C C# D (cluster) -> no perfect matches (${clusterPartial} partial, ${clusterWeak} weak)`);
+
+  // Weak match: a third grade below partial, for when only about half of a chord's
+  // must have notes show up. C E Bb has the root, 3rd, and flat 7th but not the 9th,
+  // so it reads as a perfect C7 first, with C9 also listed, just as a weak guess
+  const weakCase = identifyChords(chord('C', 'E', 'Bb'), false);
+  const c7 = weakCase.find(m => m.fullName === 'C7');
+  const c9 = weakCase.find(m => m.fullName === 'C9');
+  assert(c7 !== undefined && c7.matchQuality === 'perfect', 'C E Bb should read C7 as a perfect match.');
+  assert(c9 !== undefined && c9.matchQuality === 'weak', 'C E Bb should also read C9 as a weak match (missing the 9th).');
+  console.log(`C E Bb -> C7 [perfect], C9 [weak] (missing the 9th)`);
 
   // Two note power chord: just a root and a fifth still name a chord
   const powerChord = identifyChords(chord('C', 'G'), false)[0];
@@ -191,7 +222,9 @@ function testNamingPreferences(): void {
   assert(flats.fullName === 'Bb', `preferFlats true should name Bb, got ${flats.fullName}.`);
   console.log(`Bb D F with flats -> ${flats.fullName}`);
 
-  // preferFlats false -> the same notes are spelled A#, meaning the root is spelled A# instead of Bb because the user prefers sharps visually. The chord is still the same, just spelled differently.
+  // preferFlats false -> the same notes are spelled A#
+  // meaning the root is spelled A# instead of Bb because the user prefers sharps visually. 
+  // The chord is still the same, just spelled differently.
   const sharps = identifyChords(chord(...bFlatMajor), false)[0];
   assert(sharps.fullName === 'A#', `preferFlats false should name A#, got ${sharps.fullName}.`);
   console.log(`Bb D F with sharps -> ${sharps.fullName}`);
