@@ -1,8 +1,9 @@
 /* Shows the chord name, the notes that make it up, the chord type, and a badge for how well the tapped
-   notes fit (perfect, partial, or weak). Row only redraws when its own match changes */
+   notes fit (perfect, partial, or weak). Tapping the card opens the music theory breakdown for that
+   chord. Row only redraws when its own match changes */
 
 import React, { memo } from 'react';
-import { View, Text } from 'react-native';
+import { Pressable, View, Text } from 'react-native';
 import { ChordMatch } from '../../types';
 import { resultStyles } from '../../styles/resultStyles';
 import { formatChordName, getNotesInChord } from '../../engine/chordNamer';
@@ -10,6 +11,7 @@ import { formatChordName, getNotesInChord } from '../../engine/chordNamer';
 interface Props {
   match: ChordMatch;
   preferFlats?: boolean;
+  onPress: () => void; // opens the theory breakdown for this chord
 }
 
 // Picks the card border, badge, and label for a given match quality, so (green = perfect, amber = partial, red = weak)
@@ -19,7 +21,7 @@ const QUALITY_STYLES = {
   weak: { card: resultStyles.cardWeak, badge: resultStyles.badgeWeak, text: resultStyles.badgeTextWeak, label: 'Weak' },
 };
 
-function ChordResultCardComponent({ match, preferFlats }: Props) {
+function ChordResultCardComponent({ match, preferFlats, onPress }: Props) {
   const quality = QUALITY_STYLES[match.matchQuality]; // Get the styles for this quality of match
 
   // The actual note names of this chord, and the name to display.
@@ -27,7 +29,11 @@ function ChordResultCardComponent({ match, preferFlats }: Props) {
   const displayName = formatChordName(match.rootPitchClass, match.chordType.symbol, match.bassPitchClass, preferFlats);
 
   return (
-    <View style={[resultStyles.card, quality.card]}>
+    // Pressable instead of a plain View so a tap can open the detail view (dims slightly while pressed)
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [resultStyles.card, quality.card, pressed && { opacity: 0.8 }]}
+    >
       <View style={{ flex: 1 }}>
         <Text style={resultStyles.chordName}>{displayName}</Text>
         <Text style={resultStyles.chordNotes}>{chordNotes.join('  -  ')}</Text>
@@ -36,10 +42,10 @@ function ChordResultCardComponent({ match, preferFlats }: Props) {
           {match.isInversion && match.bassNote ? ` · bass: ${match.bassNote}` : ''}
         </Text>
       </View>
-      <View style={[resultStyles.badge, quality.badge]}> 
+      <View style={[resultStyles.badge, quality.badge]}>
         <Text style={[resultStyles.badgeText, quality.text]}>{quality.label}</Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
