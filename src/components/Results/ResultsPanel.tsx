@@ -4,13 +4,16 @@
    them are perfect matches. The panel height is adjustable by dragging the handle
    at the top resizes it, so the user can give more room to the results or to the
    fretboard, and on release it snaps to a small, medium, or large size
-   
-   This is also helpful for different screen sizes*/
+
+   This is also helpful for different screen sizes
+
+   Tapping a result opens the music theory breakdown for that chord */
 
 import React, { useCallback, useRef, useState } from 'react';
 import { View, Text, FlatList, PanResponder, Dimensions } from 'react-native';
 import { ChordMatch } from '../../types';
 import { ChordResultCard } from './ChordResultCard';
+import { ChordDetailModal } from './ChordDetailModal';
 import { resultStyles } from '../../styles/resultStyles';
 
 // The three sizes the panel snaps to: small (just a peek at the results),
@@ -38,6 +41,9 @@ interface Props {
 
 export function ResultsPanel({ matches, activeCount, preferFlats }: Props) {
   const perfectCount = matches.filter(m => m.matchQuality === 'perfect').length;
+
+  // The chord the user tapped to read about (null when the theory breakdown is closed)
+  const [selectedMatch, setSelectedMatch] = useState<ChordMatch | null>(null);
 
   // The panel's current height, plus two refs the drag callbacks read from:
   // the height the drag started at and the snap size the panel last settled on.
@@ -158,12 +164,26 @@ export function ResultsPanel({ matches, activeCount, preferFlats }: Props) {
           <FlatList
             data={matches}
             keyExtractor={(item, index) => `${item.fullName}-${index}`}
-            renderItem={({ item }) => <ChordResultCard match={item} preferFlats={preferFlats} />}
+            renderItem={({ item }) => (
+              <ChordResultCard
+                match={item}
+                preferFlats={preferFlats}
+                onPress={() => setSelectedMatch(item)}
+              />
+            )}
             showsVerticalScrollIndicator
             contentContainerStyle={{ paddingBottom: 8 }}
           />
         </>
       )}
+
+      {/* The music theory breakdown for the tapped chord (its own sheet over the app) */}
+      <ChordDetailModal
+        match={selectedMatch}
+        visible={selectedMatch !== null}
+        onClose={() => setSelectedMatch(null)}
+        preferFlats={preferFlats}
+      />
     </View>
   );
 }

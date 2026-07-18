@@ -140,7 +140,7 @@ The refinements pushed forward from d4 come first, since they were already due b
 - [X] Add the common extended chord formulas to the chord table (9th, 11th, 13th, and their minor and major variants)
 - [X] Add a third match grade (weak, in red) below perfect and partial for weaker matches, so results are graded in three tiers instead of two.
 - [X] Add a test case for each new chord type and confirm the whole run passes.
-- [ ] Add the music theory breakdown display for a tapped chord.
-- [ ] Add the plain-language theory explanations.
-- [ ] Write the comprehensive mid-project report.
-- [ ] Update the progress file with everything done this deliverable.
+- [X] Add the music theory breakdown display for a tapped chord.
+- [X] Add the plain-language theory explanations.
+- [X] Write the comprehensive mid-project report.
+- [X] Update the progress file with everything done this deliverable.

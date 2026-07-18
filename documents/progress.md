@@ -738,3 +738,97 @@ In the UI (the code is already written so that the logic works with these prefer
 - [ ] Add the show octaves switch.
 - [ ] Add the sharp or flat preference switch.
 - [ ] Make the results table adjustable.
+
+
+
+
+---
+
+# Deliverable 5 (d5): Expanded Chords, Theory Breakdown, Refinements and Mid-Project Report
+Date range: July 10, 2026 - July 17, 2026
+
+Expanded the chord table with the added tone chords and extended chords, added the music theory breakdown display for a tapped chord, finished the small refinements pushed forward from d4, and wrote the comprehensive mid-project report. The full plan for this deliverable is in `documents/d5-jul10-jul17/d5-July17th_plan.md`, and the mid-project report is in `documents/mid_project-status-report.md`
+
+## What This Deliverable Covers
+The July 17 goal from the contract consists of expanded chord identification and the music theory breakdown display. On top of that, this deliverable picked up tasks pushed from d4 (the options switches), and the mid-project report since this deliverable lines up with the halfway point of the project.
+
+The refinements were done first, then the new d5 work. 
+
+The current screen has the following features:
+- Everything from d3/d4 (the interactive fretboard with live chord results).
+- An Options button in the header that opens a settings sheet with two switches: note spelling (sharps or flats) and octave labels (E2 instead of just E).
+- The results panel height is adjustable by dragging the handle at the top, snapping to a small, medium or large size.
+- The matcher now recognizes the added-tone chords (add9, madd9, add11, 6/9, m6/9) and the common extended chords (9, maj9, m9, 11, m11, 13, m13, maj13).
+- Results are now graded in three tiers instead of two: perfect (green), partial (amber), and weak (red) for the weaker guesses.
+- Tapping a result opens the theory breakdown for that chord: its notes, its formula as interval names, every interval with its full name and the note it lands on, and the voicing when it is an inversion or a slash chord. Every section and every interval can be tapped for a short plain-language explanation.
+
+## Deliverable 5 Timeline
+
+| Date | Deliverable | Status | Output |
+| --- | --- | --- | --- |
+| July 10, 2026 | Plan document | Complete | `documents/d5-jul10-jul17/d5-July17th_plan.md` |
+| July 10-12, 2026 | Show octaves switch and sharp or flat switch (pushed from d4) | Complete | `src/components/common/SettingsModal.tsx`, `App.tsx` |
+| July 10-12, 2026 | Adjustable results table (pushed from d4) | Complete | `src/components/Results/ResultsPanel.tsx` |
+| July 11-13, 2026 | Added-tone and extendd chord formulas | Complete | `src/constants/chords.ts` |
+| July 11-13, 2026 | Weak match grade (third tier below partial) | Complete | `src/engine/chordMatcher.ts` |
+| July 13-14, 2026 | A test case for each new chord type | Complete | `src/tests/d4-chord-matcher-tests.ts` |
+| July 14-16, 2026 | Music theory breakdown display | Complete | `src/components/Results/ChordDetailModal.tsx` |
+| July 14-16, 2026 | Plain-language theory explanations | Complete | `src/constants/musicTheory.ts` |
+| July 10-15, 2026 | Mid-project report | Complete | `documents/mid_project-status-report.md` |
+
+## Current Scope: (d5)
+This deliverable mostly builds on top of the work that is already there: the chord expansion is table rows (no matching logic changed), the options switches flip props that already was implemented through the code, and the breakdown display reads from the match data the engine already produces.
+
+New files:
+```txt
+src/
+  constants/
+    musicTheory.ts
+  styles/
+    commonStyles.ts
+  components/
+    common/
+      SettingsModal.tsx
+      InfoTooltip.tsx
+    Results/
+      ChordDetailModal.tsx
+```
+
+Changed files:
+```txt
+App.tsx                           -> the header with the Options button, the preference state
+src/types/index.ts                -> octaves on the tuning, the weak match grade
+src/constants/tunings.ts          -> open string octaves and the open string MIDI helper
+src/constants/chords.ts           -> the added-tone and extended chord formulas
+src/engine/chordMatcher.ts        -> the weak grade classification and scoring
+src/styles/colors.ts             -> the weak match colours
+src/styles/resultStyles.ts        -> drag handle, weak badge, and detail view styles
+src/components/Fretboard/Fretboard.tsx   -> passes the octave data into the labels and markers
+src/components/Results/ResultsPanel.tsx  -> adjustable height, opens the detail view
+src/components/Results/ChordResultCard.tsx -> tappable, weak badge
+src/tests/d4-chord-matcher-tests.ts      -> a test case for each new chord type, the weak grade test
+```
+
+## Expanded Chord Identification
+The matcher already works from a table of formulas, so the expansion was adding rows: the five added-tone chords and the eight common extended chords, each with its essential intervals. Because extended chords have five, six, or seven notes and a guitarist usually cannot hold all of them at once, their essentials leave out the fifth and the lower extensions, so a common four note voicing still names the full chord, which is realistic to theory.
+
+One thing I found while writing the tests: a bare root + 11th + b7 is the exact same notes as a 7sus4 (the 11th and the 4th are the same pitch class), so the dominant 11th needs its 9th present to name as an 11th. That is not a bug, the notes really are the same, I just needed to figure out how to handle the naming, the simpler reading wins the ranking.
+
+I also split the old partial grade into two: partial now means every essential note is there (or nearly, for the big chords), and weak means only about half of them made it. Weak shows in red so a shakier guess is told apart from a close one at a glance.
+
+Each new chord type got a coded test case (one verified example per formula), and the whole run passes: 31 chord types, the edge cases, and the naming preferences.
+
+## Music Theory Breakdown Display
+Tapping a result now opens a detail sheet for that chord. It shows the match grade, the notes as chips, the formula as colour coded interval chips (tapped notes, essential missing, optional missing), every interval listed with its full name and the actual note it lands on, and the voicing when the lowest note is not the root. Each section heading has a little 'i' button, and every interval can be tapped, both open a short plain-language explanation from `src/constants/musicTheory.ts`, written for someone who does not know any theory, this is the more educational base of the app.
+
+## Done By July 17, 2026 checklist (checkmarks indicate complete, X marks incomplete):
+- [x] Add the show octaves switch. (found in `src/components/common/SettingsModal.tsx`, `src/constants/tunings.ts`)
+- [x] Add the sharp or flat preference switch. (found in `src/components/common/SettingsModal.tsx`,`App.tsx`)
+- [x] Make the results table adjustable. (found in `src/components/Results/ResultsPanel.ts`)
+- [x] Add the added-tone and common extended chord formulas to the chord table. (found in `src/constants/chords.ts`)
+- [x] Add the weak match grade below perfect and partial. (in `src/engine/chordMatcher.ts`, `src/styles/colors.ts`)
+- [x] Add a test case for each new chord type and confirm the whole run passes. (found in `src/tests/d4-chord-matcher-tests.ts`)
+- [x] Add the music theory breakdown display for a tapped chord. (found in `src/components/Results/ChordDetailModal.tsx`)
+- [x] Add the plain-language theory explanations. (found in `src/constants/musicTheory.ts`, `src/components/common/InfoTooltip.tsx`)
+- [x] Write the comprehensive mid-project report (found in `documents/mid_project-status-report.md`)
+- [x] Update the progress file with everything done this deliverable. (found in `documents/progress.md`)

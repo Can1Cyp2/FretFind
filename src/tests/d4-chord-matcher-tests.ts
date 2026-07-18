@@ -199,7 +199,7 @@ function testEdgeCases(): void {
   console.log(`C G -> ${powerChord.fullName} [${powerChord.matchQuality}]`);
 
   // Missing optional notes: C and E alone still name C as perfect, because the
-  // fifth is not an essential note for the major chord, only the root and third are
+  // fifth is not an essential note for the major chord, only the root and third are 
   const noFifth = identifyChords(chord('C', 'E'), false)[0];
   assert(noFifth.fullName === 'C', `C and E alone should name C, got ${noFifth.fullName}.`);
   assert(noFifth.matchQuality === 'perfect', 'C without its fifth should still be a perfect match.');

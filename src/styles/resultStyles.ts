@@ -122,4 +122,78 @@ export const resultStyles = StyleSheet.create({
   badgeTextPerfect: { color: COLORS.perfect },
   badgeTextPartial: { color: COLORS.partial },
   badgeTextWeak: { color: COLORS.weak },
+
+  // ----- The chord detail view (the theory breakdown that opens when a result is tapped) -----
+
+  // Section headings inside the detail view, with a small accent bar on the left,
+  // and the row that holds a heading together with its 'i' info button
+  detailSectionRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+  },
+  detailSectionHeader: {
+    marginTop: 20,
+    marginBottom: 10,
+    paddingLeft: 10,
+    borderLeftWidth: 3,
+    borderLeftColor: COLORS.accent,
+  },
+  detailSectionHeaderText: {
+    color: COLORS.accent,
+    fontSize: 14,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 1.0,
+  },
+  // The little 'i' button beside a section heading that opens its explanation popup
+  infoButton: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: COLORS.bgElevated,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  infoButtonText: {
+    color: COLORS.textSecondary,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  // Rows of small chips (used for the chord's notes and for the formula intervals)
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  chip: {
+    backgroundColor: COLORS.bgElevated,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginRight: 6,
+    marginBottom: 6,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  chipText: {
+    color: COLORS.textPrimary,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  // The note box shown when a perfect match is only missing optional notes (like the fifth)
+  optionalNoteBox: {
+    backgroundColor: COLORS.partialBg,
+    borderWidth: 1,
+    borderColor: COLORS.partialBorder,
+    borderRadius: 10,
+    padding: 12,
+    marginTop: 16,
+  },
+  optionalNoteText: {
+    color: COLORS.partial,
+    fontSize: 12,
+    fontWeight: '600',
+    lineHeight: 17,
+  },
 });
