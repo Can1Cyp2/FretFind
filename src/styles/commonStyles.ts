@@ -52,6 +52,38 @@ export const commonStyles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.4,
   },
+  // The split button in the header: Progressions on the left, Save attached on its
+  // right like an extension, sharing one pill outline
+  headerSplitButton: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    backgroundColor: COLORS.bgElevated,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: COLORS.borderLight,
+    overflow: 'hidden',
+  },
+  headerSplitLeft: {
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    justifyContent: 'center',
+  },
+  headerSplitDivider: {
+    width: 1,
+    backgroundColor: COLORS.borderLight,
+  },
+  headerSplitRight: {
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    justifyContent: 'center',
+    backgroundColor: COLORS.accentDim,
+  },
+  headerSplitSaveText: {
+    color: COLORS.accentLight,
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.4,
+  },
 
   // Bottom sheet modals: a dark overlay behind and a rounded sheet that slides up from the bottom
   modalOverlay: {
@@ -184,5 +216,57 @@ export const commonStyles = StyleSheet.create({
   },
   spellingChoiceTextActive: {
     color: COLORS.accentLight,
+  },
+
+  // Small uppercase section titles inside the sheets (Current Progression, Saved Progressions)
+  sectionTitle: {
+    color: COLORS.textSecondary,
+    fontSize: 13,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
+    paddingTop: 20,
+    paddingBottom: 8,
+  },
+
+  // The main action button in a sheet (saving a progression), and the destructive one (deleting)
+  saveButton: {
+    backgroundColor: COLORS.accent,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 20,
+    alignSelf: 'center',
+  },
+  saveButtonText: {
+    color: COLORS.textOnAccent,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  deleteButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: COLORS.dangerBg,
+  },
+  deleteButtonText: {
+    color: COLORS.danger,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+
+  // The round + button on a chord result that adds it to the progression
+  addProgressionButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.accentDim,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 8,
+  },
+  addProgressionButtonText: {
+    color: COLORS.accent,
+    fontSize: 18,
+    fontWeight: '700',
   },
 });
