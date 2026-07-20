@@ -1,15 +1,20 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Pressable, SafeAreaView, StatusBar, Text, View } from 'react-native';
+import { Alert, Pressable, SafeAreaView, StatusBar, Text, View } from 'react-native';
 import { Fretboard } from './src/components/Fretboard/Fretboard';
 import { ResultsPanel } from './src/components/Results/ResultsPanel';
 import { SettingsModal } from './src/components/common/SettingsModal';
+import { ProgressionBar } from './src/components/Progression/ProgressionBar';
+import { ProgressionManager } from './src/components/Progression/ProgressionManager';
+import { FitChordsModal } from './src/components/Progression/FitChordsModal';
+import { useProgression, MAX_PROGRESSION_LENGTH } from './src/hooks/useProgression';
 import { COLORS } from './src/styles/colors';
 import { commonStyles } from './src/styles/commonStyles';
 import { STANDARD_TUNING } from './src/constants/tunings';
 import { NUM_STRINGS } from './src/constants/notes';
 import { getPitchClassAtFret } from './src/engine/noteUtils';
 import { identifyChords } from './src/engine/chordMatcher';
-import { FretSelection, PitchClass, StringIndex } from './src/types';
+import { formatChordName } from './src/engine/chordNamer';
+import { ChordMatch, FretSelection, PitchClass, ProgressionChord, StringIndex } from './src/types';
 
 export default function App() {
   // The selected notes, both the fretboard and the results share them here
@@ -29,6 +34,26 @@ export default function App() {
 
   // Whether the Options sheet is open
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  // The chord progression: the strip the user is building, the progressions saved
+  // on the device, and the actions for both (all persisted by the hook)
+  const {
+    progression,
+    savedProgressions,
+    addChord,
+    removeChord,
+    reorderChord,
+    clearProgression,
+    saveProgression,
+    loadProgression,
+    deleteSavedProgression,
+    renameSavedProgression,
+    isFull,
+  } = useProgression();
+
+  // Whether the saved progressions sheet is open, and whether the 'chords that fit' sheet is:
+  const [isProgressionsOpen, setIsProgressionsOpen] = useState(false);
+  const [isFitChordsOpen, setIsFitChordsOpen] = useState(false);
 
   // Tap toggles a fret: tapping the same fret again clears that string,
   // otherwise it selects the new fret (and works out the note it makes).
@@ -61,7 +86,47 @@ export default function App() {
     );
   }, [currentTuning.notes]);
 
-  // Work out the matching chords whenever the selection changes (real time, no analyze button)
+  // Adding a chord to the progression keeps the exact shape currently on the fretboard,
+  // so the progression remembers how the chord was actually played
+  const handleAddToProgression = useCallback(
+    (match: ChordMatch) => {
+      addChord(match, selections);
+    },
+    [addChord, selections],
+  );
+
+  // Adding a suggested chord from the key view: it did not come from the fretboard,
+  // so it is stored without a shape (recalling it later simply does nothing)
+  const handleAddSuggestedChord = useCallback(
+    (match: ChordMatch) => {
+      addChord(match, Array(NUM_STRINGS).fill(null));
+    },
+    [addChord],
+  );
+
+  // Tapping a pill puts that chord's saved shape back onto the fretboard
+  // (this replaces whatever is currently selected)
+  const handleRecallShape = useCallback((chord: ProgressionChord) => {
+    // Chords added from the key suggestions have no saved shape, so there is nothing to recall:
+    if (!chord.selections.some(Boolean)) return;
+    setSelections(chord.selections.map(s => (s ? { ...s } : null)));
+  }, []);
+
+  // The Save button in the header: one tap keeps the current progression, named
+  // after its chords (renameable later in the Progressions sheet)
+  const handleQuickSave = useCallback(() => {
+    if (progression.length === 0) return;
+    const names = progression.map(c =>
+      formatChordName(c.rootPitchClass, c.symbol, c.bassPitchClass, preferFlats),
+    );
+    // Long progressions get a shortened name so the saved list stays readable
+    const name =
+      names.length > 4 ? `${names.slice(0, 4).join(' - ')} +${names.length - 4} more` : names.join(' - ');
+    saveProgression(name);
+    Alert.alert('Saved', `"${name}" was added to your saved progressions.`);
+  }, [progression, preferFlats, saveProgression]);
+
+  // Work out the matching chords whenever the selection changes (in real time):
   const chordResults = useMemo(() => {
     const active = selections.filter(Boolean) as FretSelection[];
     if (active.length < 2) return [];
@@ -76,6 +141,25 @@ export default function App() {
       <View style={commonStyles.header}>
         <Text style={commonStyles.headerTitle}>FretFind</Text>
         <View style={commonStyles.headerActions}>
+          {/* The split button: Progressions opens the manager, and Save (its extension
+              on the right) keeps the current progression in one tap.
+              The Save part only shows once there is a progression to save */}
+          <View style={commonStyles.headerSplitButton}>
+            <Pressable
+              onPress={() => setIsProgressionsOpen(true)}
+              style={commonStyles.headerSplitLeft}
+            >
+              <Text style={commonStyles.headerActionText}>Progressions</Text>
+            </Pressable>
+            {progression.length > 0 && (
+              <>
+                <View style={commonStyles.headerSplitDivider} />
+                <Pressable onPress={handleQuickSave} style={commonStyles.headerSplitRight}>
+                  <Text style={commonStyles.headerSplitSaveText}>Save</Text>
+                </Pressable>
+              </>
+            )}
+          </View>
           {/* Options button: opens the settings sheet with the display switches */}
           <Pressable
             onPress={() => setIsSettingsOpen(true)}
@@ -94,7 +178,24 @@ export default function App() {
         onFretPress={handleFretPress}
         onFillOpenNotes={handleFillOpenNotes}
       />
-      <ResultsPanel matches={chordResults} activeCount={activeCount} preferFlats={preferFlats} />
+      {/* The progression strip (hides itself while the progression is empty) */}
+      <ProgressionBar
+        progression={progression}
+        maxLength={MAX_PROGRESSION_LENGTH}
+        preferFlats={preferFlats}
+        onPillPress={handleRecallShape}
+        onRemove={removeChord}
+        onReorder={reorderChord}
+        onClear={clearProgression}
+        onShowFitChords={() => setIsFitChordsOpen(true)}
+      />
+      <ResultsPanel
+        matches={chordResults}
+        activeCount={activeCount}
+        preferFlats={preferFlats}
+        onAddToProgression={handleAddToProgression}
+        isProgressionFull={isFull}
+      />
       <SettingsModal
         visible={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
@@ -102,6 +203,25 @@ export default function App() {
         preferFlats={preferFlats}
         onToggleOctaves={() => setShowOctaves(prev => !prev)}
         onTogglePreferFlats={() => setPreferFlats(prev => !prev)}
+      />
+      <ProgressionManager
+        visible={isProgressionsOpen}
+        onClose={() => setIsProgressionsOpen(false)}
+        progression={progression}
+        savedProgressions={savedProgressions}
+        preferFlats={preferFlats}
+        onSave={saveProgression}
+        onLoad={loadProgression}
+        onDelete={deleteSavedProgression}
+        onRename={renameSavedProgression}
+      />
+      <FitChordsModal
+        visible={isFitChordsOpen}
+        onClose={() => setIsFitChordsOpen(false)}
+        progression={progression}
+        preferFlats={preferFlats}
+        onAddToProgression={handleAddSuggestedChord}
+        isProgressionFull={isFull}
       />
     </SafeAreaView>
   );
