@@ -64,7 +64,7 @@ export const progressionStyles = StyleSheet.create({
     fontWeight: '700',
     marginRight: 4,
   },
-  
+
   // The left and right arrows that move a chord one spot over
   arrowButton: {
     width: 22,
@@ -94,6 +94,7 @@ export const progressionStyles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
+
   // The button under the strip that opens the 'chords that fit' view
   fitButton: {
     marginTop: 8,
