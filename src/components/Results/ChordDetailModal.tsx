@@ -29,6 +29,8 @@ interface Props {
   visible: boolean;
   onClose: () => void;
   preferFlats?: boolean;
+  onAddToProgression?: () => void; // adds this chord to the progression (hidden when the progression is full)
+  isSuggestion?: boolean; // true when showing a suggested chord from the key view rather than a live match, which hides the match grade since nothing was tapped
 }
 
 // The badge for the three match grades, same colours as the result cards so they read as one system
@@ -52,7 +54,7 @@ function SectionHeader({ title, onInfo }: { title: string; onInfo: () => void })
   );
 }
 
-export function ChordDetailModal({ match, visible, onClose, preferFlats }: Props) {
+export function ChordDetailModal({ match, visible, onClose, preferFlats, onAddToProgression, isSuggestion }: Props) {
   // The explanation popup that is currently open (null when none is)
   const [tooltipInfo, setTooltipInfo] = useState<{ title: string; text: string } | null>(null);
 
@@ -80,10 +82,13 @@ export function ChordDetailModal({ match, visible, onClose, preferFlats }: Props
           </View>
 
           <ScrollView showsVerticalScrollIndicator={false}>
-            {/* The match grade and the full chord type name */}
-            <View style={[resultStyles.badge, quality.badge, { alignSelf: 'flex-start', marginBottom: 12 }]}>
-              <Text style={[resultStyles.badgeText, quality.text]}>{quality.label}</Text>
-            </View>
+            {/* The match grade and the full chord type name. A suggested chord from the
+                key view is not a match against anything, so it gets no grade badge */}
+            {!isSuggestion && (
+              <View style={[resultStyles.badge, quality.badge, { alignSelf: 'flex-start', marginBottom: 12 }]}>
+                <Text style={[resultStyles.badgeText, quality.text]}>{quality.label}</Text>
+              </View>
+            )}
             <Text style={{ color: COLORS.textSecondary, fontSize: 15, fontWeight: '500' }}>
               {match.chordType.name}
             </Text>
@@ -216,6 +221,16 @@ export function ChordDetailModal({ match, visible, onClose, preferFlats }: Props
                   {match.missingIntervals.length === 1 ? 'is' : 'are'} optional and can be left out without changing what the chord is.
                 </Text>
               </View>
+            )}
+
+            {/* Add this chord straight to the progression from the breakdown */}
+            {onAddToProgression && (
+              <Pressable
+                onPress={onAddToProgression}
+                style={[commonStyles.saveButton, { marginTop: 24, marginBottom: 8 }]}
+              >
+                <Text style={commonStyles.saveButtonText}>Add to Progression</Text>
+              </Pressable>
             )}
 
             <View style={{ height: 24 }} />

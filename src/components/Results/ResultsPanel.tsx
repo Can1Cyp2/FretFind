@@ -37,9 +37,11 @@ interface Props {
   matches: ChordMatch[];
   activeCount: number;   // how many notes are currently selected on the fretboard
   preferFlats?: boolean;
+  onAddToProgression?: (match: ChordMatch) => void; // adds a chord to the progression
+  isProgressionFull?: boolean; // hides the add buttons when the progression is at its cap
 }
 
-export function ResultsPanel({ matches, activeCount, preferFlats }: Props) {
+export function ResultsPanel({ matches, activeCount, preferFlats, onAddToProgression, isProgressionFull }: Props) {
   const perfectCount = matches.filter(m => m.matchQuality === 'perfect').length;
 
   // The chord the user tapped to read about (null when the theory breakdown is closed)
@@ -169,6 +171,9 @@ export function ResultsPanel({ matches, activeCount, preferFlats }: Props) {
                 match={item}
                 preferFlats={preferFlats}
                 onPress={() => setSelectedMatch(item)}
+                onAddToProgression={
+                  onAddToProgression && !isProgressionFull ? () => onAddToProgression(item) : undefined
+                }
               />
             )}
             showsVerticalScrollIndicator
@@ -183,6 +188,13 @@ export function ResultsPanel({ matches, activeCount, preferFlats }: Props) {
         visible={selectedMatch !== null}
         onClose={() => setSelectedMatch(null)}
         preferFlats={preferFlats}
+
+        // Add to progression button is hidden when the progression is full or no chord is selected
+        onAddToProgression={
+          onAddToProgression && !isProgressionFull && selectedMatch
+            ? () => onAddToProgression(selectedMatch)
+            : undefined
+        }
       />
     </View>
   );

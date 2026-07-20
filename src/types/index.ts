@@ -81,3 +81,51 @@ export interface ChordMatch {
   inversionNumber?: number;     // 1st, 2nd, or 3rd inversion, when it can be worked out
   score: number;                // used to rank the matches against each other
 }
+
+// -----------------------------------------------------------------------------------------------------
+// Progression data (chords the user collects to write music with):
+
+// One chord added to the progression: enough to name it again and to recall its exact fretboard shape later
+export interface ProgressionChord {
+  id: string;                   // unique id, so removing and reordering work reliably
+  fullName: string;             // the chord name at the time it was added
+  rootPitchClass: PitchClass;
+  symbol: string;               // the chord symbol, kept so the name can be respelt (sharps or flats)
+  bassPitchClass?: PitchClass;  // only set for inversions and slash chords
+  matchQuality: MatchQuality;
+  selections: (FretSelection | null)[]; // the exact fretboard shape it was played as
+}
+
+// A progression saved on the device with a name, so the user can keep more than one
+export interface SavedProgression {
+  id: string;
+  name: string;
+  chords: ProgressionChord[];
+  createdAt: number; // when it was saved (a milliseconds timestamp)
+}
+
+// --------------------
+// Key and scale data (for suggesting other chords that fit the progression):
+
+export type ScaleType = 'major' | 'minor'; // the two scale types the app currently recognizes (I may add more later but for now these are the most common)
+
+// The basic chord quality a scale degree carries when its triad is built from scale notes
+export type TriadQuality = 'major' | 'minor' | 'dim';
+
+// One key the progression might be in: a tonic note plus a scale type,
+// with a score for how well the progression's chords fit inside it
+export interface MusicKey {
+  tonicPc: PitchClass;
+  type: ScaleType;
+  name: string;   // for example 'C Major' or 'A Minor'
+  score: number;  // used to rank the candidate keys against each other
+}
+
+// One chord that belongs to a key: the chord built on one of its scale degrees
+export interface DiatonicChord {
+  numeral: string;            // the roman numeral (I, ii, V, vii, and so on)
+  rootPitchClass: PitchClass;
+  quality: TriadQuality;
+  symbol: string;               // '' for major, 'm' for minor, 'dim' for diminished
+  inProgression: boolean;     // whether the progression already uses this chord
+}

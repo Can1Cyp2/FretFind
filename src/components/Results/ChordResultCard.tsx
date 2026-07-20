@@ -6,12 +6,14 @@ import React, { memo } from 'react';
 import { Pressable, View, Text } from 'react-native';
 import { ChordMatch } from '../../types';
 import { resultStyles } from '../../styles/resultStyles';
+import { commonStyles } from '../../styles/commonStyles';
 import { formatChordName, getNotesInChord } from '../../engine/chordNamer';
 
 interface Props {
   match: ChordMatch;
   preferFlats?: boolean;
   onPress: () => void; // opens the theory breakdown for this chord
+  onAddToProgression?: () => void; // adds this chord to the progression (hidden when the progression is full)
 }
 
 // Picks the card border, badge, and label for a given match quality, so (green = perfect, amber = partial, red = weak)
@@ -21,7 +23,7 @@ const QUALITY_STYLES = {
   weak: { card: resultStyles.cardWeak, badge: resultStyles.badgeWeak, text: resultStyles.badgeTextWeak, label: 'Weak' },
 };
 
-function ChordResultCardComponent({ match, preferFlats, onPress }: Props) {
+function ChordResultCardComponent({ match, preferFlats, onPress, onAddToProgression }: Props) {
   const quality = QUALITY_STYLES[match.matchQuality]; // Get the styles for this quality of match
 
   // The actual note names of this chord, and the name to display.
@@ -45,6 +47,13 @@ function ChordResultCardComponent({ match, preferFlats, onPress }: Props) {
       <View style={[resultStyles.badge, quality.badge]}>
         <Text style={[resultStyles.badgeText, quality.text]}>{quality.label}</Text>
       </View>
+      
+      {/* The + button adds this chord (with its current shape) to the progression */}
+      {onAddToProgression && (
+        <Pressable onPress={onAddToProgression} style={commonStyles.addProgressionButton} hitSlop={4}>
+          <Text style={commonStyles.addProgressionButtonText}>+</Text>
+        </Pressable>
+      )}
     </Pressable>
   );
 }
