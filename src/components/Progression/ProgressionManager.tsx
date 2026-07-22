@@ -7,7 +7,7 @@
    Delete asks first since it cannot be undone. */
 
 import React, { useCallback, useState } from 'react';
-import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { ProgressionChord, SavedProgression } from '../../types';
 import { COLORS } from '../../styles/colors';
 import { commonStyles } from '../../styles/commonStyles';
@@ -88,6 +88,13 @@ export function ProgressionManager({
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      {/* The avoiding view shifts the whole sheet up when the keyboard opens, so the
+          name inputs near the bottom of the screen stay visible while typing.
+          iOS and Android move their windows differently, so each gets its own behaviour */}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
       {/* Tapping the dark area outside the sheet closes it, taps inside the sheet stay put */}
       <Pressable style={commonStyles.modalOverlay} onPress={onClose}>
         <Pressable style={commonStyles.modalContent} onPress={event => event.stopPropagation()}>
@@ -165,6 +172,7 @@ export function ProgressionManager({
           </ScrollView>
         </Pressable>
       </Pressable>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
