@@ -32,6 +32,22 @@ I do not know why this is happening yet and have to look deeply in it yet.
 ## 4. The app got laggy after adding audio:
 After adding the audio playback, everything started feeling laggy: the audio lags behind the tap when it plays, and the app itself lags when selecting a note, even when clearing one which does not play any sound at all.
 
+The clearing part was the clue that I did not realize at first, that this was not just an audio problem. 
+
+It turned out to be two problems stacked on top of each other:
+1. Every tap was redrawing the entire fretboard. Each fret row is memoized so it should only redraw when its own props change, but three of its props were being recreated on every render: the selections array (new array every tap), the tap handler (new function every render), and the open string MIDI numbers (rebuilt every render). So after this, the memoization still did not actually work to solve the issue (at least on its own), and every tap or clear redrew all 23 rows, each one full of the wood grain, string, and shadow views. This was technically true before the audio too, but I think the audio work on the same thread pushed it over the edge into visible lag, and the audio itself then had to wait behind the redraw, which is why the sound came out late.
+
+2. Generating a tone is heavy for the phone's JS engine. The sample loop runs tens of thousands of math operations on the app's single JS thread, so the first tap of each new note (and the startup preload doing six at once) was freezing the app for a beat.
+
+Done: The solution that fixed both problems.
+For the redraw: the fret row got a custom comparison so a row only redraws when one of its own six markers actually flipped, and the fretboard now keeps the MIDI numbers memoized and the tap handlers stable between renders (they read the current selections through a ref instead of being rebuilt). A tap now redraws one row instead of 23.
+For the audio cost: the tone sample rate was halved (11025 Hz still covers the highest harmonic on the fretboard with room to spare, and it halves both the math and the data), the startup preloads are spread out a moment apart instead of running all at once, and each sound's status update interval was set long so playing sounds do not stream constant updates back to the app. Combined with the earlier change of loading each sound once and replaying it, taps respond immediately now and the sound plays right after.
+
+Follow-up: after the lag fix the strum had a cutting in and out sound to it. 
+Two causes: the tone files ended in a hard cut while still quietly ringing (an audible click, and a strum lines six of them up in a row), and chord shapes that land the same pitch on two strings were restarting that pitch's one shared sound mid-ring. Fixed by ramping the last 80ms of every tone down to silent, and by playing each distinct pitch once per strum.
+
+- I still find the audio sounds a bit cut off but I cannot figure out why, but it is much better than before and I am happy with it for now.
+
 
 ## 5. Chords That Fit needs more explanation, not just the chord list:
 Right now 'Chords That Fit' shows the matching keys and the chords that belong to them, but it does not explain why any of it matters. 
