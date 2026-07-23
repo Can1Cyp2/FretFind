@@ -278,4 +278,30 @@ function FretRowComponent({ fret, isNut, openNotes, selections, onFretPress, bas
   );
 }
 
-export const FretRow = memo(FretRowComponent);
+// Only redraws a row when something it actually shows has changed:
+// The selections array is a ref on every tap, which would normally force every one of
+// the 23 rows (each with wood grain, strings, and shadows, etc.) to redraw for a single tap. 
+// A given row only cares whether one of ITS six markers flipped, so this check lets every other row skip re-rendering.
+// Ultimately minimizing lag and freeizing
+function fretRowPropsAreEqual(prev: Props, next: Props): boolean {
+  if (
+    prev.fret !== next.fret ||
+    prev.isNut !== next.isNut ||
+    prev.showOctaves !== next.showOctaves ||
+    prev.preferFlats !== next.preferFlats ||
+    prev.openNotes !== next.openNotes ||
+    prev.baseMidi !== next.baseMidi ||
+    prev.onFretPress !== next.onFretPress
+  ) {
+    return false;
+  }
+  // did any string's marker on this exact fret appear or disappear?:
+  for (let i = 0; i < next.selections.length; i++) {
+    const wasSelectedHere = prev.selections[i]?.fret === prev.fret;
+    const isSelectedHere = next.selections[i]?.fret === next.fret;
+    if (wasSelectedHere !== isSelectedHere) return false;
+  }
+  return true;
+}
+
+export const FretRow = memo(FretRowComponent, fretRowPropsAreEqual);

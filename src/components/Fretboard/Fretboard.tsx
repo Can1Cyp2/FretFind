@@ -3,11 +3,13 @@
    and the chord results always agree on what is selected). When a fret is tapped,
    the fretboard calls onFretPress and lets the app update the selection. */
 
-import React from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { View, ScrollView } from 'react-native';
 import { FretRow } from './FretRow';
 import { FretNumber } from './FretNumber';
 import { StringLabels } from './StringLabels';
+import { StrumButton } from './StrumButton';
+import { playNote, playStrum, preloadNotes } from '../../audio/notePlayer';
 import {
   fretboardStyles,
   FRET_NUMBER_COL_WIDTH,
@@ -36,8 +38,46 @@ export function Fretboard({
   const openNotes = tuning.notes as PitchClass[];
 
   // The MIDI number of each open string, so the fret rows can work out which octave any fretted note lands in when the octave labels are switched on.
-      // (current) d5 - This will also help finding which sound to play when the user wants to hear the note/chord but that is for a later deliverable. 
-  const baseMidi = getOpenStringMidi(tuning);
+      // (as planned in d5) d6 - These same numbers now also decide which sound to play: a tapped fret is just its string's open MIDI number plus the fret.
+  // Memoized so the array keeps the same identity between renders, otherwise every fret row would think its props changed and redraw on every tap
+  const baseMidi = useMemo(() => getOpenStringMidi(tuning), [tuning]);
+
+  // Ready the open string sounds in the background when the board loads so they're ready to be played and not have to wait
+  useEffect(() => {
+    preloadNotes(baseMidi);
+  }, [baseMidi]);
+
+  // Whether enough notes are selected to strum (fewer than two is not a chord):
+  const hasChord = selections.filter(Boolean).length >= 2;
+
+  // The tap handlers read the selections through a ref, so the handlers themselves
+  // stay the exact same function between renders. 
+  // That keeps the fret rows memoization working, only the tapped row redraws instead of all 23 of them
+  const selectionsRef = useRef(selections);
+  selectionsRef.current = selections;
+
+  // A tap plays the note it selects, so the fretboard is heard and visual.
+  // Tapping an already selected fret clears it, and clearing doesnt play audio
+  const handleFretPress = useCallback(
+    (stringIndex: StringIndex, fret: number) => {
+      const isClearing = selectionsRef.current[stringIndex]?.fret === fret;
+      if (!isClearing) {
+        playNote(baseMidi[stringIndex] + fret);
+      }
+      onFretPress(stringIndex, fret);
+    },
+    [baseMidi, onFretPress],
+  );
+
+  // Strum the selected notes from the low string to the high string,
+  // the way a pick actually crosses the strings
+  const handleStrum = useCallback(() => {
+    const midiNotes: number[] = [];
+    selectionsRef.current.forEach((selection, i) => {
+      if (selection) midiNotes.push(baseMidi[i] + selection.fret);
+    });
+    playStrum(midiNotes);
+  }, [baseMidi]);
 
   // Build the list of fret numbers, 0 (the nut) up to the last fret:
   const frets: number[] = [];
@@ -46,6 +86,9 @@ export function Fretboard({
   return (
     <View style={fretboardStyles.wrapper}>
       <View style={fretboardStyles.container}>
+        {/* The strum button floats to the right of the board while a chord is selected */}
+        <StrumButton visible={hasChord} onStrum={handleStrum} />
+
         {/* Fixed top: string labels */}
         <View style={fretboardStyles.stringLabelsRowWrapper}>
           <View style={{ width: FRET_NUMBER_COL_WIDTH }} />
@@ -76,7 +119,7 @@ export function Fretboard({
                 isNut={f === 0}
                 openNotes={openNotes}
                 selections={selections}
-                onFretPress={onFretPress}
+                onFretPress={handleFretPress}
                 baseMidi={baseMidi}
                 showOctaves={showOctaves}
                 preferFlats={preferFlats}
