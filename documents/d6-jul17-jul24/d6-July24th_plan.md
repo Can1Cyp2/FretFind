@@ -96,13 +96,13 @@ src/tests/d4-chord-matcher-tests.ts
 
 ## Checklist
 
-- [ ] Add the tone generator and play a note when a fret is tapped.
-- [ ] Add the strum button that plays the selected chord.
-- [ ] Add the chord progression builder (add a matched chord, reorder, recall a chord shape, clear chords)
-- [ ] Add saved progressions on the device (later on cloud, but wanted to implement local first to ensure it works), allows users to save, load and delete.
-- [ ] Add the 'chords that fit' button in the progression popup: a key/scale selector (defaults to the best matching key) showing the chords that belong to that key with the ones already in the progression noted.
+- [X] Add the tone generator and play a note when a fret is tapped.
+- [X] Add the strum button that plays the selected chord.
+- [X] Add the chord progression builder (add a matched chord, reorder, recall a chord shape, clear chords)
+- [X] Add saved progressions on the device (later on cloud, but wanted to implement local first to ensure it works), allows users to save, load and delete.
+- [X] Add the 'chords that fit' button in the progression popup: a key/scale selector (defaults to the best matching key) showing the chords that belong to that key with the ones already in the progression noted.
 - [ ] Set up the backend for accounts (create account, sign in, sign out).
 - [ ] Add opt-in cloud saving and loading for progressions, with RLS protections
 - [ ] Fix the results panel scrollbar overlap.
-- [ ] Revisit the header layout with the new controls (discussed further in detail in the mid-report).
+- [X] Revisit the header layout with the new controls (discussed further in detail in the mid-report).
 - [ ] Add the extra edge cases for the added-tone and extended chords and confirm the whole run passes.
