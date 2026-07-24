@@ -101,8 +101,8 @@ src/tests/d4-chord-matcher-tests.ts
 - [X] Add the chord progression builder (add a matched chord, reorder, recall a chord shape, clear chords)
 - [X] Add saved progressions on the device (later on cloud, but wanted to implement local first to ensure it works), allows users to save, load and delete.
 - [X] Add the 'chords that fit' button in the progression popup: a key/scale selector (defaults to the best matching key) showing the chords that belong to that key with the ones already in the progression noted.
-- [ ] Set up the backend for accounts (create account, sign in, sign out).
+- [x] Set up the backend for accounts (create account, sign in, sign out).
 - [ ] Add opt-in cloud saving and loading for progressions, with RLS protections
-- [ ] Fix the results panel scrollbar overlap.
+- [-] Fix the results panel scrollbar overlap. (Actually upon closer inspection, it is not that big of an issue, so I may just leave it as is, it is not blocking anything and functions fine)
 - [X] Revisit the header layout with the new controls (discussed further in detail in the mid-report).
 - [ ] Add the extra edge cases for the added-tone and extended chords and confirm the whole run passes.
