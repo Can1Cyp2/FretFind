@@ -916,9 +916,13 @@ React Native has no built in way to make a sound out of nothing, so in the app I
 4. **Package it into a real (.wav) sound file:** The samples are wrapped in a plain WAV file header, byte by byte, then turned into one long line of text (base64) that the phone's audio player can load directly, no separate file needed.
 5. **Play it:** The player (`expo-av`) loads that line of text like any other sound file. Each note's sound is generated once and reused after that, so repeat notes are instant. A strum plays each note a little after the one before it, low string to high string, the way a pick actually crosses the strings.
 
-Along the way, tapping notes got noticeably laggy, and the strum had a clicking, cutting in and out sound. Both are now fixed/improved and documented with their causes in `documents/d6-jul17-jul24/d6-issues.md`. The sound still partially cuts in and out but I have not figured out why fully.
+Along the way, tapping notes got noticeably laggy, and the strum had a clicking, cutting in and out sound. Both are now fixed, documented with their causes in `documents/d6-jul17-jul24/d6-issues.md`.
 
 Source: *Music: A Mathematical Offering* by Dave Benson (Equal tempered scales, p.377) and (Frequency and MIDI chart, p.379). This is the exact formula used in `midiNoteToFrequency` in `src/audio/toneGenerator.ts`.
+
+**July 24th (last minute d6 update), The clicking/cutting issue:** Each note only ever had one sound loaded for it, and playing that note again just restarted that same sound from the beginning. So if a note was still ringing and got triggered again, either by tapping it a second time or by a strum touching the same note twice, it got chopped off mid ring, which is what made the clicking sound. Although sometimes there was still a clicking noise, and I am not sure why, my theory is that it was processing or triggering twice, because the audio files itself sounded fine when tested in isolation. The ultimate fix was to stop restarting the one shared sound. Now every time a note plays, a brand new copy of its sound is made on the spot, it starts right away and quietly unloads itself once it finishes ringing. That way playing a note never cuts off a copy of itself that is still going, so notes can ring over each other the way real guitar strings do when you strum. The audio playback sounds more realistic now, the clicking noise is gone, and the playback is still (essentially) instant.
+
+I wish I had the time to add real guitar sounds, a real audio sound for each note, but that is a much bigger project and I do not have the time to complete it in this deliverable timeline. This audio improvement I made for the end of d6 is much closer to a real guitar sound than the simple sine wave I had before, and it is still a playable tone that is good enough for this app and for myself.
 
 ## How 'Chords That Fit' Was Made
 
