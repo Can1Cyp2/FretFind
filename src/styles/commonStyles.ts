@@ -269,4 +269,64 @@ export const commonStyles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
   },
+
+  // The little green dot on the Account button that shows someone is signed in
+  signedInDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: COLORS.perfect,
+    marginLeft: 10,
+  },
+
+  /* The account button in the Options sheet. It sits apart from the setting cards
+     above it: those flip a value in place, this one opens another screen, so it gets
+     an accent border, an avatar circle, and an arrow to say so. */
+  accountButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.bgElevated,
+    borderWidth: 1,
+    borderColor: COLORS.accent,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginTop: 6,
+  },
+  accountAvatar: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: COLORS.bgHover,
+    borderWidth: 1,
+    borderColor: COLORS.borderLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  accountAvatarSignedIn: {
+    backgroundColor: COLORS.accentDim,
+    borderColor: COLORS.accent,
+  },
+  accountAvatarText: {
+    color: COLORS.accentLight,
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  accountButtonTitle: {
+    color: COLORS.textPrimary,
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  accountButtonSubtitle: {
+    color: COLORS.textSecondary,
+    fontSize: 12,
+    marginTop: 2,
+  },
+  accountChevron: {
+    color: COLORS.textMuted,
+    fontSize: 22,
+    fontWeight: '700',
+    marginLeft: 8,
+  },
 });
