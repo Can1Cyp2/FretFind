@@ -48,6 +48,12 @@ Two causes: the tone files ended in a hard cut while still quietly ringing (an a
 
 - I still find the audio sounds a bit cut off but I cannot figure out why, but it is much better than before and I am happy with it for now.
 
+Follow-up 2 (the real fix): the remaining cutting turned out to be baked into the design, not a bug in it. Each pitch had exactly one loaded sound that got restarted on every play, so any re-trigger of a note that was still ringing (tapping it again, or a strum touching it) cut it off midring. I reworked the player so playing is the opposite way around: the generated audio for each note is cached once, but every play creates its own fresh copy of the sound, which starts immediately and unloads itself the moment it finishes ringing (with a fallback timer, and a cap of twelve ringing copies so they cannot pile up). Nothing is ever restarted now, so notes ring over each other the way real strings do, and the strum no longer needs the distinct-pitch workaround, doubled pitches just ring twice.
+
+The tone itself was also rebuilt at the same time, since the sine wave version sounded thin and frail no matter the fixes I tried around it. It now uses plucked string synthesis (Karplus-Strong): a burst of noise fed into a loop one wave cycle long, averaged and slightly quietened on every pass, which behaves like a real plucked string settling from chaos into a ringing pitch. It costs less per sample than the three sine calls did, so the sample rate went back up to 22050 Hz and the notes ring for over a second, and low notes naturally ring longer than high ones, exactly like real strings. 
+
+I am much happier with the sound now, and it is close to what I imagined. I think ultimately recording every individual string on a real guitar would be better, but this is more than a good compromise for now.
+
 
 ## 5. Chords That Fit needs more explanation, not just the chord list:
 Right now 'Chords That Fit' shows the matching keys and the chords that belong to them, but it does not explain why any of it matters. 

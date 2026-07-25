@@ -115,6 +115,13 @@ export function useProgression() {
     });
   }, []);
 
+  // Put a set of chords straight into the strip, replacing what is there. Used when
+  // loading a progression that did not come from this phone's saved list, like one
+  // that came back from the account.
+  const replaceProgression = useCallback((chords: ProgressionChord[]) => {
+    setProgression(chords.map(c => ({ ...c })));
+  }, []);
+
   // Load a saved progression back into the strip (replacing what is there):
   const loadProgression = useCallback((id: string) => {
     setSavedProgressions(saved => {
@@ -139,6 +146,7 @@ export function useProgression() {
     removeChord,
     reorderChord,
     clearProgression,
+    replaceProgression,
     saveProgression,
     loadProgression,
     deleteSavedProgression,

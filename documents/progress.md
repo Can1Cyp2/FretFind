@@ -950,6 +950,6 @@ Two pieces of groundwork are done outside of the FretFind app's own code, but fo
 
 Hopefully I can add some this last minute, or it will be pushed to d7, per the plan:
 
-- [ ] Add opt-in cloud saving and loading for progressions, with RLS protections, and merge the info site and account entry point into the app.
-- [ ] Fix the results panel scrollbar overlap.
+- [X] Add opt-in cloud saving and loading for progressions, with RLS protections, and merge the info site and account entry point into the app. (At the last few hours of the day I was able to add this, but I have not been able to test the front-backend connection, plus for account deletion I simply direct users to the website, which is fine but not ideal, I may change this later)
+- [ ] Fix the results panel scrollbar overlap - ((Actually upon closer inspection, it is not that big of an issue, so I may just leave it as is, it is not blocking anything and functions fine))
 - [ ] Add the extra edge cases for the added-tone and extended chords and confirm the whole run passes.
