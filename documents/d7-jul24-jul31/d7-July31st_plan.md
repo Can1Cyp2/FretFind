@@ -132,11 +132,11 @@ Carried over from d6, planned for later in this deliverable:
 
 ## Checklist
 
-- [] Add the common tunings list (found in `src/constants/tunings.ts`)
+- [X] Add the common tunings list (found in `src/constants/tunings.ts`)
 - [X] Add the tuning fork button next to the fretboard (so users can change tuning) (found in `src/components/Fretboard/TuningButton.tsx`, `src/components/Fretboard/Fretboard.tsx`)
-- [] Add the tuning popup with common tunings, and switching tunings (found in `src/components/Fretboard/TuningModal.tsx`)
-- [] Add the custom tuning builder with local saving, renaming, and deleting. (found in `src/hooks/useTunings.ts`, `src/components/Fretboard/TuningModal.tsx`)
-- [] Clear the fretboard selection when the tuning changes (I may change this or make it an option). (found in `App.tsx`)
+- [X] Add the tuning popup with common tunings, and switching tunings (found in `src/components/Fretboard/TuningModal.tsx`)
+- [X] Add the custom tuning builder with local saving, renaming, and deleting. (found in `src/hooks/useTunings.ts`, `src/components/Fretboard/TuningModal.tsx`)
+- [X] Clear the fretboard selection when the tuning changes (I may change this or make it an option - that has not been decided yet). (found in `App.tsx`)
 
 - [] Add the voicing generator that works out the playable shapes for a chord in the current tuning. (found in `src/engine/voicingGenerator.ts`)
 - [] Add the scrollable voicings section to the chord info popup, most common shape first. (found in `src/components/Results/VoicingBrowser.tsx`, `VoicingDiagram.tsx`)
