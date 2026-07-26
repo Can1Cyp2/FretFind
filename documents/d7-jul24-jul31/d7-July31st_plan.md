@@ -147,3 +147,7 @@ Carried over from d6, planned for later in this deliverable:
 - [ ] Add the extra edge cases for the added-tone and extended chords and confirm the whole run passes.
 - [ ] Add the theory explanations to 'Chords That Fit'.
 - [ ] Add the in-app walkthrough of the app's features to the Settings screen.
+
+- [ ] Sent app to both Google Play Store and Apple App Store for review, with the features up to d6.
+- [ ] Made app screenshots for both Google Play Store and Apple App Store.
+- [ ] Made a logo for the app.
