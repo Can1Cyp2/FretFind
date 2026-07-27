@@ -8,19 +8,21 @@
    does not know any theory can still learn from what they are playing. */
 
 import React, { useState } from 'react';
-import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
-import { ChordMatch, PitchClass } from '../../types';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ChordMatch, ChordVoicing, PitchClass, Tuning } from '../../types';
 import { COLORS } from '../../styles/colors';
 import { commonStyles } from '../../styles/commonStyles';
 import { resultStyles } from '../../styles/resultStyles';
 import { intervalToName, intervalToFullName, pitchClassToName } from '../../engine/noteUtils';
 import { formatChordName, getNotesInChord } from '../../engine/chordNamer';
 import { InfoTooltip } from '../common/InfoTooltip';
+import { VoicingBrowser } from './VoicingBrowser';
 import {
   NOTES_INFO,
   FORMULA_INFO,
   INTERVALS_INFO,
   VOICING_INFO,
+  SHAPES_INFO,
   INTERVAL_EXPLANATIONS,
 } from '../../constants/musicTheory';
 
@@ -31,6 +33,8 @@ interface Props {
   preferFlats?: boolean;
   onAddToProgression?: () => void; // adds this chord to the progression (hidden when the progression is full)
   isSuggestion?: boolean; // true when showing a suggested chord from the key view rather than a live match, which hides the match grade since nothing was tapped
+  tuning?: Tuning;        // the tuning the shapes are worked out for, the Shapes section is left out without it
+  onLoadVoicing?: (voicing: ChordVoicing) => void; // puts a chosen shape onto the main fretboard
 }
 
 // The badge for the three match grades, same colours as the result cards so they read as one system
@@ -54,7 +58,16 @@ function SectionHeader({ title, onInfo }: { title: string; onInfo: () => void })
   );
 }
 
-export function ChordDetailModal({ match, visible, onClose, preferFlats, onAddToProgression, isSuggestion }: Props) {
+export function ChordDetailModal({
+  match,
+  visible,
+  onClose,
+  preferFlats,
+  onAddToProgression,
+  isSuggestion,
+  tuning,
+  onLoadVoicing,
+}: Props) {
   // The explanation popup that is currently open (null when none is)
   const [tooltipInfo, setTooltipInfo] = useState<{ title: string; text: string } | null>(null);
 
@@ -70,9 +83,15 @@ export function ChordDetailModal({ match, visible, onClose, preferFlats, onAddTo
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      {/* Tapping the dark area outside the sheet closes it, taps inside the sheet stay put */}
-      <Pressable style={commonStyles.modalOverlay} onPress={onClose}>
-        <Pressable style={commonStyles.modalContent} onPress={event => event.stopPropagation()}>
+      {/* The dark backdrop is its own layer behind the sheet rather than a Pressable
+          wrapped around it. Wrapping it meant the scrolling list underneath had two
+          pressable ancestors competing with it for the touch, so a drag that started
+          on any tappable row (which is most of this sheet) got swallowed instead of
+          scrolling. Keeping the backdrop as a sibling leaves the scroll view with a
+          clear path to the touch, and tapping outside still closes the sheet. */}
+      <View style={commonStyles.modalOverlay}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+        <View style={commonStyles.modalContent}>
           <View style={commonStyles.modalHandle} />
           <View style={commonStyles.modalHeader}>
             <Text style={[commonStyles.modalTitle, { fontSize: 28, fontWeight: '900' }]}>{displayName}</Text>
@@ -92,6 +111,22 @@ export function ChordDetailModal({ match, visible, onClose, preferFlats, onAddTo
             <Text style={{ color: COLORS.textSecondary, fontSize: 15, fontWeight: '500' }}>
               {match.chordType.name}
             </Text>
+
+            {/* Shapes: the different ways this chord can actually be played. This sits
+                first because it is the part someone can act on straight away, the theory
+                underneath explains why the shape is what it is. Only shown when a tuning
+                was passed in, since the shapes are worked out from the open strings. */}
+            {tuning && onLoadVoicing && (
+              <>
+                <SectionHeader title="Shapes" onInfo={() => setTooltipInfo({ title: 'Shapes', text: SHAPES_INFO })} />
+                <VoicingBrowser
+                  rootPitchClass={match.rootPitchClass}
+                  chordType={match.chordType}
+                  tuning={tuning}
+                  onLoadVoicing={onLoadVoicing}
+                />
+              </>
+            )}
 
             {/* Notes: the actual notes the chord is made of */}
             <SectionHeader title="Notes" onInfo={() => setTooltipInfo({ title: 'Notes', text: NOTES_INFO })} />
@@ -236,14 +271,18 @@ export function ChordDetailModal({ match, visible, onClose, preferFlats, onAddTo
             <View style={{ height: 24 }} />
           </ScrollView>
 
-          <InfoTooltip
-            visible={tooltipInfo !== null}
-            title={tooltipInfo?.title ?? ''}
-            text={tooltipInfo?.text ?? ''}
-            onClose={() => setTooltipInfo(null)}
-          />
-        </Pressable>
-      </Pressable>
+        </View>
+
+        {/* Sits last inside the full screen overlay so it paints over the sheet above
+            rather than inside it, which is what lets the sheet stay open and visible
+            underneath while an explanation is being read */}
+        <InfoTooltip
+          visible={tooltipInfo !== null}
+          title={tooltipInfo?.title ?? ''}
+          text={tooltipInfo?.text ?? ''}
+          onClose={() => setTooltipInfo(null)}
+        />
+      </View>
     </Modal>
   );
 }

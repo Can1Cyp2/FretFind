@@ -1,13 +1,15 @@
 /* The 'chords that fit' sheet, opened from the button under the progression strip.
+
    It works out which key the progression most likely lives in, shows every key as
    a selectable chip (ordered best match first, with the best one picked by
    default), and lists the seven chords that key builds on its scale degrees, with
    roman numerals and their notes.
+
    Chords the progression already uses are marked so what is left to try stands out. */
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { ChordMatch, ProgressionChord } from '../../types';
+import { ChordMatch, ChordVoicing, ProgressionChord, Tuning } from '../../types';
 import { COLORS } from '../../styles/colors';
 import { commonStyles } from '../../styles/commonStyles';
 import { rankKeys, getDiatonicChords, diatonicChordToMatch } from '../../engine/keyMatcher';
@@ -22,6 +24,8 @@ interface Props {
   preferFlats?: boolean;
   onAddToProgression?: (match: ChordMatch) => void; // adds a suggested chord to the progression
   isProgressionFull?: boolean; // hides the add option when the progression is at its cap
+  tuning: Tuning;              // so a suggested chord can show real shapes for the current tuning
+  onLoadVoicing?: (voicing: ChordVoicing) => void; // puts a suggested chord's shape onto the fretboard
 }
 
 export function FitChordsModal({
@@ -31,6 +35,8 @@ export function FitChordsModal({
   preferFlats,
   onAddToProgression,
   isProgressionFull,
+  tuning,
+  onLoadVoicing,
 }: Props) {
   // Every key ranked against the progression, best match first
   const rankedKeys = useMemo(() => rankKeys(progression, preferFlats), [progression, preferFlats]);
@@ -52,11 +58,18 @@ export function FitChordsModal({
     [selectedKey, progression],
   );
 
+  /* (in order to mitigate issues I faced:) Keeping both mounted the whole time and just handing visibility from one to the other, rather than ever having two native modal
+     windows open at once, avoids that regardless of which one is closed first: */
+  const showThisSheet = visible && selectedChord === null;
+
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      {/* Tapping the dark area outside the sheet closes it, taps inside the sheet stay put */}
-      <Pressable style={commonStyles.modalOverlay} onPress={onClose}>
-        <Pressable style={commonStyles.modalContent} onPress={event => event.stopPropagation()}>
+    <>
+    <Modal visible={showThisSheet} transparent animationType="slide" onRequestClose={onClose}>
+      {/* The dark backdrop is a layer behind the sheet rather than wrapped around it,
+          so the list inside can scroll without the backdrop stealing the touch */}
+      <View style={commonStyles.modalOverlay}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+        <View style={commonStyles.modalContent}>
           <View style={commonStyles.modalHandle} />
           <View style={commonStyles.modalHeader}>
             <Text style={commonStyles.modalTitle}>Chords That Fit</Text>
@@ -127,23 +140,41 @@ export function FitChordsModal({
 
             <View style={{ height: 24 }} />
           </ScrollView>
-
-          {/* The theory breakdown for a tapped suggestion, same view the results use */}
-          <ChordDetailModal
-            match={selectedChord}
-            visible={selectedChord !== null}
-            onClose={() => setSelectedChord(null)}
-            preferFlats={preferFlats}
-            isSuggestion
-            onAddToProgression={
-              onAddToProgression && !isProgressionFull && selectedChord
-                ? () => onAddToProgression(selectedChord)
-                : undefined
-            }
-          />
-        </Pressable>
-      </Pressable>
+        </View>
+      </View>
     </Modal>
+
+    {/* The theory breakdown for a tapped suggestion, the same view the results use.
+        It sits outside the sheet above so the two are never nested. */}
+    <ChordDetailModal
+      match={selectedChord}
+      visible={selectedChord !== null}
+      onClose={() => setSelectedChord(null)}
+      preferFlats={preferFlats}
+      isSuggestion
+      tuning={tuning}
+
+      /* A suggested chord never came off the fretboard, so before this it was only
+         something to read about. Loading one of its shapes puts it onto the fretboard
+         so it can be heard and strummed, which was issue 2 in the d6 issues file. 
+         
+         Both sheets close so the fretboard is visible. */
+      onLoadVoicing={
+        onLoadVoicing
+          ? voicing => {
+              onLoadVoicing(voicing);
+              setSelectedChord(null);
+              onClose();
+            }
+          : undefined
+      }
+      onAddToProgression={
+        onAddToProgression && !isProgressionFull && selectedChord
+          ? () => onAddToProgression(selectedChord)
+          : undefined
+      }
+    />
+    </>
   );
 }
 

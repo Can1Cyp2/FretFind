@@ -11,7 +11,7 @@
 
 import React, { useCallback, useRef, useState } from 'react';
 import { View, Text, FlatList, PanResponder, Dimensions } from 'react-native';
-import { ChordMatch } from '../../types';
+import { ChordMatch, ChordVoicing, Tuning } from '../../types';
 import { ChordResultCard } from './ChordResultCard';
 import { ChordDetailModal } from './ChordDetailModal';
 import { resultStyles } from '../../styles/resultStyles';
@@ -39,9 +39,19 @@ interface Props {
   preferFlats?: boolean;
   onAddToProgression?: (match: ChordMatch) => void; // adds a chord to the progression
   isProgressionFull?: boolean; // hides the add buttons when the progression is at its cap
+  tuning: Tuning;              // passed down so the breakdown can work out this chord's shapes
+  onLoadVoicing?: (voicing: ChordVoicing) => void; // puts a chosen shape onto the fretboard
 }
 
-export function ResultsPanel({ matches, activeCount, preferFlats, onAddToProgression, isProgressionFull }: Props) {
+export function ResultsPanel({
+  matches,
+  activeCount,
+  preferFlats,
+  onAddToProgression,
+  isProgressionFull,
+  tuning,
+  onLoadVoicing,
+}: Props) {
   const perfectCount = matches.filter(m => m.matchQuality === 'perfect').length;
 
   // The chord the user tapped to read about (null when the theory breakdown is closed)
@@ -188,6 +198,17 @@ export function ResultsPanel({ matches, activeCount, preferFlats, onAddToProgres
         visible={selectedMatch !== null}
         onClose={() => setSelectedMatch(null)}
         preferFlats={preferFlats}
+        tuning={tuning}
+
+        // Loading a shape closes the breakdown, otherwise the sheet would be sitting over the fretboard the user just asked to see the shape on
+        onLoadVoicing={
+          onLoadVoicing
+            ? voicing => {
+                onLoadVoicing(voicing);
+                setSelectedMatch(null);
+              }
+            : undefined
+        }
 
         // Add to progression button is hidden when the progression is full or no chord is selected
         onAddToProgression={
