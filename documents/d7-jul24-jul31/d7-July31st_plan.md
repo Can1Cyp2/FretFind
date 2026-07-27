@@ -138,15 +138,15 @@ Carried over from d6, planned for later in this deliverable:
 - [X] Add the custom tuning builder with local saving, renaming, and deleting. (found in `src/hooks/useTunings.ts`, `src/components/Fretboard/TuningModal.tsx`)
 - [X] Clear the fretboard selection when the tuning changes (I may change this or make it an option - that has not been decided yet). (found in `App.tsx`)
 
-- [] Add the voicing generator that works out the playable shapes for a chord in the current tuning. (found in `src/engine/voicingGenerator.ts`)
-- [] Add the scrollable voicings section to the chord info popup, most common shape first. (found in `src/components/Results/VoicingBrowser.tsx`, `VoicingDiagram.tsx`)
-- [] Add the button that loads a voicing onto the fretboard. (found in `src/components/Results/VoicingBrowser.tsx`, `App.tsx`)
-- [] Make the 'Chords That Fit' suggestions use the voicings, so a suggested chord can be loaded and strummed (closes issue 2 in `documents/d6-jul17-jul24/d6-issues.md`). (found in `src/components/Progression/FitChordsModal.tsx`)
-- [] Add tests for the generated shapes. (found in `src/tests/d7-voicing-tests.ts`)
+- [X] Add the voicing generator that works out the playable shapes for a chord in the current tuning. (found in `src/engine/voicingGenerator.ts`)
+- [X] Add the scrollable voicings section to the chord info popup, most common shape first. (found in `src/components/Results/VoicingBrowser.tsx`, `VoicingDiagram.tsx`, `ChordDetailModal.tsx`, `ResultsPanel.tsx`)
+- [X] Add the button that loads a voicing onto the fretboard. (found in `src/components/Results/VoicingBrowser.tsx`, `App.tsx`)
+- [X] Make the 'Chords That Fit' suggestions use the voicings, so a suggested chord can be loaded and strummed (closes issue 2 in `documents/d6-jul17-jul24/d6-issues.md`). (found in `src/components/Progression/FitChordsModal.tsx`)
 
 - [ ] Add the extra edge cases for the added-tone and extended chords and confirm the whole run passes.
 - [ ] Add the theory explanations to 'Chords That Fit'.
 - [ ] Add the in-app walkthrough of the app's features to the Settings screen.
+- [] Add small tweaks and polish to the UI, such as fixing issues, giving feedback to the user on button presses, and making the app feel more finished.
 
 - [ ] Sent app to both Google Play Store and Apple App Store for review, with the features up to d6.
 - [ ] Made app screenshots for both Google Play Store and Apple App Store.
