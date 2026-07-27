@@ -69,7 +69,10 @@ Hardcoding shapes would mean a table of six fret numbers for every chord type at
 2. **Slide a window up the neck:** A real hand covers about four frets at once, so the search looks at one four fret window at a time, from the nut upward and only considers notes inside it (open strings always count since an open string needs no finger).
 3. **Pick one note per string, or mute it:** Inside a window each string either plays one of its available chord notes or is left out. That gives a set of candidate shapes per position.
 4. **Throw out the ones that are not really the chord:** A shape only counts if every essential interval of the chord is actually sounding. This reuses the same essential interval idea the matcher has used since d3, so a voicing can leave out a fifth but never the third that makes it major or minor
-5. **Score for playability and rank:** Shapes score higher for having the root in the bass, using more strings, having a smaller fret span, sitting lower on the neck, and not muting strings in the middle of the shape (which is much harder to play than muting the outside ones). Best score first, so the shape a real player would reach for first is the one shown first.
+5. **Count the fingers, and throw out anything a hand cannot hold:** This is what decides whether a shape is real rather than only theoretically correct. Open strings cost no finger. Every fretted note costs one, except the index finger lying flat across the lowest fret of the shape, which is a barre and covers as many strings as it reaches. The barre only counts from the lowest fret, since the index has to sit under the other fingers rather than over them, and only when every string it crosses is sounding at that fret or higher, otherwise the finger would deaden a string that is meant to ring. Anything still needing more than four fingers is dropped outright rather than just ranked lower.
+6. **Score for playability and rank:** Shapes score higher for having the root in the bass, using more strings, having a smaller fret span, sitting lower on the neck, and needing fewer fingers, with open strings a strong bonus since those shapes are both easier and the ones taught first. Best score first, so the shape a real player would reach for first is the one shown first.
+
+On optional notes, since this is what makes the difference between a shape that is playable and one that is not: a shape only ever has to contain the chord's essential notes, never all of them. That is what the essential intervals in the chord table have meant since d3, and it matters more here than anywhere else in the app. A major chord needs its root and its third but not its fifth, so dropping the fifth to get a shape a hand can actually hold is the right trade, and the scoring only mildly prefers the fuller sounding version. The aim is to find ways to play the chord, not to cram in every note it could theoretically contain.
 
 This is the same brute force and score approach the chord matcher and the key matcher already use, which keeps it consistent with how the rest of the app thinks, and means it works for every chord type in the table without any per chord special casing. It is almost instant on a modern phone, and the tests confirm it is returning the right shapes for the chords I already know how to play.
 
@@ -114,7 +117,8 @@ The risk with generating shapes rather than listing them is that the app confide
 
 - The top ranked shape for C, Em, G, Am, D, Cmaj7 and A5 has to come out as the exact open shape a beginner learns first (for example C has to be `x 3 2 0 1 0`).
 - Every shape for every chord type at every root has to contain all of that chord's essential notes and fit inside a four fret stretch. That is 2976 shapes checked.
-- The list has to be ordered best first, and must not show the same fingering twice with strings dropped off the end.
+- Every one of those shapes has to need four fingers or fewer, and the finger counting itself is checked against shapes whose real fingering I already know (open C comes out as three fingers, open Em as one because a single finger covers both notes, A5 as one).
+- The list has to be ordered best first, and must not show the same fingering twice with strings dropped off the end, unless the fuller version genuinely costs more effort to hold.
 - The same chord asked for in standard and in Drop D has to come back with different frets, which is what proves the tuning is really being read rather than a table being looked up.
 
 Run: npm run test:voicings
@@ -128,11 +132,11 @@ Carried over from d6, planned for later in this deliverable:
 
 ## Checklist
 
-- [] Add the common tunings list (found in `src/constants/tunings.ts`)
+- [X] Add the common tunings list (found in `src/constants/tunings.ts`)
 - [X] Add the tuning fork button next to the fretboard (so users can change tuning) (found in `src/components/Fretboard/TuningButton.tsx`, `src/components/Fretboard/Fretboard.tsx`)
-- [] Add the tuning popup with common tunings, and switching tunings (found in `src/components/Fretboard/TuningModal.tsx`)
-- [] Add the custom tuning builder with local saving, renaming, and deleting. (found in `src/hooks/useTunings.ts`, `src/components/Fretboard/TuningModal.tsx`)
-- [] Clear the fretboard selection when the tuning changes (I may change this or make it an option). (found in `App.tsx`)
+- [X] Add the tuning popup with common tunings, and switching tunings (found in `src/components/Fretboard/TuningModal.tsx`)
+- [X] Add the custom tuning builder with local saving, renaming, and deleting. (found in `src/hooks/useTunings.ts`, `src/components/Fretboard/TuningModal.tsx`)
+- [X] Clear the fretboard selection when the tuning changes (I may change this or make it an option - that has not been decided yet). (found in `App.tsx`)
 
 - [] Add the voicing generator that works out the playable shapes for a chord in the current tuning. (found in `src/engine/voicingGenerator.ts`)
 - [] Add the scrollable voicings section to the chord info popup, most common shape first. (found in `src/components/Results/VoicingBrowser.tsx`, `VoicingDiagram.tsx`)
@@ -143,3 +147,7 @@ Carried over from d6, planned for later in this deliverable:
 - [ ] Add the extra edge cases for the added-tone and extended chords and confirm the whole run passes.
 - [ ] Add the theory explanations to 'Chords That Fit'.
 - [ ] Add the in-app walkthrough of the app's features to the Settings screen.
+
+- [ ] Sent app to both Google Play Store and Apple App Store for review, with the features up to d6.
+- [ ] Made app screenshots for both Google Play Store and Apple App Store.
+- [ ] Made a logo for the app.

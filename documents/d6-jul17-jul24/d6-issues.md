@@ -18,6 +18,10 @@ For now, the plan is to work out the most common playable shape without hardcodi
 
 I am marking this as an ongoing issue rather than solving it fully now, since the right long-term answer depends on the voicing feature that has not been built yet, and I do not want to spend the time hardcoding something that will be thrown away.
 
+Done (d7): the voicing feature exists now, so this got solved properly instead of with the fallback I described above. Tapping a chord in 'Chords That Fit' opens the same breakdown sheet it always did, and that sheet now has a Shapes section: the ways that chord can actually be played, worked out from the current tuning, with a button that loads the chosen one onto the fretboard. So a suggested chord can be seen, heard and strummed like any chord the user played themselves, and both sheets close on load so the fretboard is actually visible underneath.
+
+The multiple voicings worry I had here is what the feature is built around rather than something it works around. Nothing is hardcoded: the shapes come out of `src/engine/voicingGenerator.ts`, which searches the neck four frets at a time and scores each shape for playability, so the most common shape is first but the others are all there to page through. My instinct in this entry to favour shapes low on the neck turned out to be right, that ended up as one of the scoring terms, alongside having the root in the bass, using more strings, and using open strings.
+
 
 ## 3. ERROR: Text strings must be rendered within a Text component:
 I am seeing this error in the console:
