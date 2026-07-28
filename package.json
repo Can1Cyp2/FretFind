@@ -4,11 +4,13 @@
   "main": "index.ts",
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
+    "@supabase/supabase-js": "^2.110.8",
     "expo": "~54.0.33",
     "expo-av": "~16.0.8",
     "expo-status-bar": "~3.0.9",
     "react": "19.1.0",
-    "react-native": "0.81.5"
+    "react-native": "0.81.5",
+    "react-native-url-polyfill": "^4.0.0"
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
@@ -16,12 +18,13 @@
   },
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web",
     "mock:progression": "tsc --project tsconfig.mock.json && node dist/mock/src/scripts/mockProgression.js",
     "test:mock": "tsc --project tsconfig.mock.json && node dist/mock/src/tests/basicControllers.mock.test.js",
-    "test:chords": "tsc --project tsconfig.mock.json && node dist/mock/src/tests/d4-chord-matcher-tests.js"
+    "test:chords": "tsc --project tsconfig.mock.json && node dist/mock/src/tests/d4-chord-matcher-tests.js",
+    "test:voicings": "tsc --project tsconfig.mock.json && node dist/mock/src/tests/d7-voicing-tests.js"
   },
   "private": true
 }

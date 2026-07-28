@@ -82,6 +82,20 @@ export interface ChordMatch {
   score: number;                // used to rank the matches against each other
 }
 
+// One playable shape for a chord: the actual frets to hold down, worked out for
+// whichever tuning is currently selected rather than read from a fixed table
+export interface ChordVoicing {
+  selections: (FretSelection | null)[]; // the shape itself, one entry per string (null means that string is not played)
+  lowestFret: number;      // the lowest fretted note, 0 when the shape only uses open strings
+  highestFret: number;     // the highest fretted note, so the diagram knows what range to draw
+  stringsUsed: number;     // how many strings actually sound
+  hasOpenStrings: boolean; // open shapes near the nut are the ones most players learn first
+  isRootInBass: boolean;   // true when the lowest sounding note is the root of the chord
+  fingers: number;         // how many fingers it actually takes to hold, open strings cost none
+  hasBarre: boolean;       // true when one finger has to lie flat across several strings
+  score: number;           // used to rank the shapes, most common and most playable first
+}
+
 // -----------------------------------------------------------------------------------------------------
 // Progression data (chords the user collects to write music with):
 

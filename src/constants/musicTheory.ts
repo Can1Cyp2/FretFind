@@ -1,28 +1,33 @@
-/* The plain-language music theory explanations for the chord detail view.
-   These are the texts behind the little 'i' buttons and the tappable interval
-   chips. They are written for someone who does not know theory, the way I wish
-   these ideas were explained to me when I was learning: short, and no jargon
-   without saying what it means. */
+/* The plain-language music theory explanations for the chord detail view:
 
-// What the Notes section means
+   the texts behind the 'i' buttons and the interval explanations. 
+   They are written for someone who does not know theory, 
+   essentially, the way I wish these ideas were explained to me when I was learning: 
+   short, and no jargon, saying what it means. */
+
+// What the Notes section means:
 export const NOTES_INFO =
   'These are the notes that make up this chord. Each one is a pitch class, a note name without an octave, so every C on the fretboard counts as the same note here. Together they give the chord its sound and its name.';
 
-// What the Formula section means
+// What the Formula section means:
 export const FORMULA_INFO =
   'The formula is the recipe for this type of chord. Each symbol is a distance up from the root note (R is the root itself, 3 is a major third above it, b7 a minor seventh, and so on). The pattern of distances is what makes a major chord major and a minor chord minor, no matter which note it starts from.';
 
-// What the Intervals section means
+// What the Intervals section means:
 export const INTERVALS_INFO =
   'An interval is the distance between the root and another note, counted in semitones (one semitone = one fret on the guitar). Chords are built from intervals, so understanding them shows why a chord sounds the way it does, and how to build it anywhere on the neck.';
 
-// What the Voicing section means (only shown for inversions and slash chords)
+// What the Voicing section means (only shown for inversions and slash chords):
 export const VOICING_INFO =
   'The voicing describes which note of the chord ended up lowest. When the root is the lowest note, the chord is in root position. When another chord note is lowest it is an inversion, and in a name like C/E the note after the slash is the bass note. The chord itself does not change, only the flavour of how it sits.';
 
+// What the Shapes section means (the different ways the same chord can be played):
+export const SHAPES_INFO =
+  'The same chord can be played in several places on the neck. Every one of these shapes contains the notes of this chord, they just use different strings and different frets, so they sound a little higher, lower, or fuller than each other. The first shape is usually the one players learn first, since it sits near the nut and uses open strings. These are worked out for your current tuning, so they change if you change it.';
+
 // One short explanation per interval, keyed by its size in semitones (0 to 11).
-// The bigger extension numbers land on the same notes (the 9th is the 2nd an
-// octave up, the 11th is the 4th, the 13th is the 6th), so those are covered here too.
+// The bigger extension numbers land on the same notes (the 9th is the 2nd an octave up, 
+// the 11th is the 4th, the 13th is the 6th), so those are covered here too:
 export const INTERVAL_EXPLANATIONS: Record<number, string> = {
   0: 'The Root (R) is the note the chord is named after and built from. Every other note in the chord is measured as a distance up from this one. In a C major chord, the root is C.',
   1: 'The Minor 2nd (b2) is one semitone (one fret) above the root. It is the crunchiest, most dissonant interval, and shows up in some jazz voicings and Spanish flavoured sounds.',
