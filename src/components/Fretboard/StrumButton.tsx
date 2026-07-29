@@ -4,6 +4,7 @@ It only appearsonce two or more notes are selected (a single note is not a chord
 import React, { memo, useRef, useCallback } from 'react';
 import { Pressable, Text, Animated, StyleSheet } from 'react-native';
 import { COLORS } from '../../styles/colors';
+import { FLOATING_BUTTON_REACH } from '../../styles/fretboardStyles';
 
 interface Props {
   visible: boolean;   // shown only when there is a chord worth strumming
@@ -50,11 +51,12 @@ function StrumButtonComponent({ visible, onStrum }: Props) {
   );
 }
 
-// Floats just past the right edge of the fretboard, above the results
+// Floats just past the right edge of the fretboard, above the results. The board's own
+// width reserves exactly this much space for it, see fretboardStyles.
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    right: -52,
+    right: -FLOATING_BUTTON_REACH,
     bottom: 10,
     zIndex: 10,
   },

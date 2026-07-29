@@ -12,10 +12,27 @@ export const MARKER_SIZE = 32;
 export const STRING_LEFT_PAD = 20;
 export const STRING_RIGHT_PAD = 26;
 const MAX_FRETBOARD_WIDTH = 250;
-export const FRETBOARD_CONTENT_WIDTH = Math.min(
-  SCREEN_WIDTH - FRET_NUMBER_COL_WIDTH,
-  MAX_FRETBOARD_WIDTH,
-);
+
+/* The strum and tuning buttons float past the board's right edge by this much (see
+   their own files for the exact positioning). On a wide screen the board is capped at
+   MAX_FRETBOARD_WIDTH anyway, which already leaves more than enough leftover margin
+   for the buttons on both sides, so the board can just stay centered there exactly
+   like before. It was only on a narrower phone that the margin shrank below what the
+   buttons need and they started getting clipped by the edge of the screen.
+
+   So this only steps in on a screen narrow enough for that to actually happen: it
+   shrinks the board by exactly the reach, then gives that space back as the board's
+   right margin, which guarantees the room the buttons need without shifting the board
+   sideways anywhere it did not need to. */
+export const FLOATING_BUTTON_REACH = 52;
+
+const NATURAL_WIDTH = Math.min(SCREEN_WIDTH - FRET_NUMBER_COL_WIDTH, MAX_FRETBOARD_WIDTH);
+const NATURAL_MARGIN = (SCREEN_WIDTH - NATURAL_WIDTH - FRET_NUMBER_COL_WIDTH) / 2;
+const NEEDS_RESERVED_SPACE = NATURAL_MARGIN < FLOATING_BUTTON_REACH;
+
+export const FRETBOARD_CONTENT_WIDTH = NEEDS_RESERVED_SPACE
+  ? Math.min(SCREEN_WIDTH - FRET_NUMBER_COL_WIDTH - FLOATING_BUTTON_REACH, MAX_FRETBOARD_WIDTH)
+  : NATURAL_WIDTH;
 export const STRING_SPACING = (FRETBOARD_CONTENT_WIDTH - STRING_LEFT_PAD - STRING_RIGHT_PAD) / 5;
 
 // Fret wire dimensions for realistic string 3D effect:
@@ -32,6 +49,7 @@ export const fretboardStyles = StyleSheet.create({
     flexDirection: 'column',
     width: FRETBOARD_CONTENT_WIDTH + FRET_NUMBER_COL_WIDTH,
     alignSelf: 'center',
+    marginRight: NEEDS_RESERVED_SPACE ? FLOATING_BUTTON_REACH : 0, 
     backgroundColor: COLORS.fretboardBg,
     borderLeftWidth: 3,
     borderRightWidth: 3,

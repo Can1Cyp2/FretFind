@@ -11,14 +11,31 @@ import { ProgressionChord, SavedProgression } from '../types';
 
 const TABLE = 'progressions';
 
+// A short fingerprint of one chords actual shape, which frets are held on which
+// strings, not just its name. Two chords can share a name and still be completely
+// different notes (most often because they were played in different tunings)
+function chordFingerprint(chord: ProgressionChord): string {
+  return chord.selections.map(s => (s ? `${s.stringIndex}.${s.fret}` : 'x')).join(',');
+}
+
 /* The phone and the server each make their own ids, so the same progression has a
    different id in each list and they cannot be matched that way. This builds a key
-   out of what the user actually sees instead, the name and how many chords are in
-   it, which is enough to tell whether a device progression is already on the account.
+   out of what the user actually sees and played instead: the name, and the exact
+   shape of every chord in it.
+
+   It used to be just the name and how many chords were in it. That meant two
+   completely different progressions that happened to share a name and length were treated as the same, 
+   two attempts at the same idea in different tunings. Whichever one reached the account backend
+   first silently blocked the other from ever being backed up, since as far as it could see it already looked backed up.
+   
+   This new revised keying on the actual frets fixes that: a different tuning means different
+   frets even for a chord with the same name, so it now counts as a different
+   progression rather than being folded into the one already on the account.
+
    Both the cloud button and the automatic backup use this, so they always agree on
    what is already backed up */
-export function backupKey(progression: { name: string; chords: unknown[] }): string {
-  return `${progression.name}::${progression.chords.length}`;
+export function backupKey(progression: { name: string; chords: ProgressionChord[] }): string {
+  return `${progression.name}::${progression.chords.map(chordFingerprint).join('|')}`;
 }
 
 // What one row looks like coming back from the server. The chords are stored as a

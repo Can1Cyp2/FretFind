@@ -9,6 +9,7 @@ import { FretRow } from './FretRow';
 import { FretNumber } from './FretNumber';
 import { StringLabels } from './StringLabels';
 import { StrumButton } from './StrumButton';
+import { TuningButton } from './TuningButton';
 import { playNote, playStrum, preloadNotes } from '../../audio/notePlayer';
 import {
   fretboardStyles,
@@ -25,6 +26,7 @@ interface Props {
   preferFlats?: boolean;
   onFretPress: (stringIndex: StringIndex, fret: number) => void; // a fret was tapped
   onFillOpenNotes: () => void;           // the 'O' button at the nut was tapped, which fills in all open notes
+  onOpenTuning: () => void;              // the tuning fork button was tapped, which opens the tuning popup
 }
 
 export function Fretboard({
@@ -34,6 +36,7 @@ export function Fretboard({
   preferFlats = false,
   onFretPress,
   onFillOpenNotes,
+  onOpenTuning,
 }: Props) {
   const openNotes = tuning.notes as PitchClass[];
 
@@ -86,8 +89,11 @@ export function Fretboard({
   return (
     <View style={fretboardStyles.wrapper}>
       <View style={fretboardStyles.container}>
-        {/* The strum button floats to the right of the board while a chord is selected */}
+        {/* The strum button floats to the right bottom of the board while a chord is selected,
+            the tuning button floats to the right too but at the top near the tuning letters string labels
+            */}
         <StrumButton visible={hasChord} onStrum={handleStrum} />
+        <TuningButton onPress={onOpenTuning} />
 
         {/* Fixed top: string labels */}
         <View style={fretboardStyles.stringLabelsRowWrapper}>
