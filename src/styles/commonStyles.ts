@@ -242,6 +242,13 @@ export const commonStyles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
   },
+  // 'add to progression' button flash green for a few seconds right after it actually added a chord as confirmation to the user
+  saveButtonAdded: {
+    backgroundColor: COLORS.perfect,
+  },
+  saveButtonTextAdded: {
+    color: COLORS.bg,
+  },
   deleteButton: {
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -268,6 +275,16 @@ export const commonStyles = StyleSheet.create({
     color: COLORS.accent,
     fontSize: 18,
     fontWeight: '700',
+  },
+  // The same button, flashed green right after it actually added the chord (see
+  // saveButtonAdded above for why this replaced the old banner notification)
+  addProgressionButtonAdded: {
+    backgroundColor: COLORS.perfectBg,
+    borderWidth: 1,
+    borderColor: COLORS.perfectBorder,
+  },
+  addProgressionButtonTextAdded: {
+    color: COLORS.perfect,
   },
 
   // The little green dot on the Account button that shows someone is signed in

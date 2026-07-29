@@ -1,9 +1,7 @@
-/* A small centered popup for the theory explanations. It fades in over whatever
-   is open, shows a title and a short plain-language text, and closes from the
-   'Got it' button or a tap anywhere outside it. */
+/* A small centered popup for the theory explanations */
 
 import React from 'react';
-import { Modal, View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { COLORS } from '../../styles/colors';
 
 interface Props {
@@ -14,50 +12,79 @@ interface Props {
 }
 
 export function InfoTooltip({ visible, title, text, onClose }: Props) {
+  if (!visible) return null;
+
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      {/* Tapping the dark area outside the popup closes it, taps inside stay put */}
-      <Pressable
-        style={{
-          flex: 1,
-          backgroundColor: COLORS.overlay,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-        onPress={onClose}
-      >
-        <Pressable
-          style={{
-            backgroundColor: COLORS.bgCard,
-            borderRadius: 16,
-            padding: 24,
-            maxWidth: '85%',
-            borderWidth: 1,
-            borderColor: COLORS.border,
-          }}
-          onPress={event => event.stopPropagation()}
-        >
-          <Text style={{ color: COLORS.accent, fontSize: 18, fontWeight: '700', marginBottom: 12 }}>
-            {title}
-          </Text>
-          <Text style={{ color: COLORS.textSecondary, fontSize: 14, lineHeight: 22 }}>
-            {text}
-          </Text>
-          <Pressable
-            onPress={onClose}
-            style={{
-              backgroundColor: COLORS.accent,
-              paddingHorizontal: 24,
-              paddingVertical: 10,
-              borderRadius: 20,
-              marginTop: 20,
-              alignSelf: 'center',
-            }}
-          >
-            <Text style={{ color: COLORS.textOnAccent, fontSize: 14, fontWeight: '700' }}>Got it</Text>
+    /* box-none lets the parts of this that are just layout pass touches through to the
+       backdrop underneath them, so only the backdrop and the card itself take taps.
+
+       zIndex covers iOS / elevation Android, both are needed for this to reliably
+       paint above the onscreen content rather than behind it. */
+    <View style={styles.root} pointerEvents="box-none">
+      {/* Tapping the dark area outside the card closes it */}
+      <Pressable style={styles.backdrop} onPress={onClose} />
+
+      <View style={styles.centerer} pointerEvents="box-none">
+        <View style={styles.card}>
+          <Text style={styles.title}>{title}</Text>
+          <Text style={styles.body}>{text}</Text>
+          <Pressable onPress={onClose} style={styles.button}>
+            <Text style={styles.buttonText}>Got it</Text>
           </Pressable>
-        </Pressable>
-      </Pressable>
-    </Modal>
+        </View>
+      </View>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  root: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 100,
+    elevation: 100,
+  },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: COLORS.overlay,
+  },
+  centerer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  card: {
+    backgroundColor: COLORS.bgCard,
+    borderRadius: 16,
+    padding: 24,
+    maxWidth: '85%',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    // Lifts the card above its own backdrop on Android, which goes by elevation rather than by which order the views are written in
+    elevation: 4,
+  },
+  title: {
+    color: COLORS.accent,
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 12,
+  },
+  body: {
+    color: COLORS.textSecondary,
+    fontSize: 14,
+    lineHeight: 22,
+  },
+  button: {
+    backgroundColor: COLORS.accent,
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 20,
+    marginTop: 20,
+    alignSelf: 'center',
+  },
+  buttonText: {
+    color: COLORS.textOnAccent,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+});

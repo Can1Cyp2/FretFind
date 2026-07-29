@@ -127,7 +127,7 @@ export function SettingsModal({
                   account is recognisable at a glance, or a person outline when not */}
               <View style={[commonStyles.accountAvatar, isSignedIn && commonStyles.accountAvatarSignedIn]}>
                 <Text style={commonStyles.accountAvatarText}>
-                  {isSignedIn && accountEmail ? accountEmail[0].toUpperCase() : '☺'}
+                  {isSignedIn && accountEmail ? accountEmail[0].toUpperCase() : '👤'}
                 </Text>
               </View>
               <View style={{ flex: 1 }}>
