@@ -7,7 +7,7 @@
    can be tapped. Both open a short plain-language explanation, so someone who
    does not know any theory can still learn from what they are playing. */
 
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ChordMatch, ChordVoicing, PitchClass, Tuning } from '../../types';
 import { COLORS } from '../../styles/colors';
@@ -70,6 +70,31 @@ export function ChordDetailModal({
 }: Props) {
   // The explanation popup that is currently open (null when none is)
   const [tooltipInfo, setTooltipInfo] = useState<{ title: string; text: string } | null>(null);
+
+  /* Whether the Add to Progression button is showing its green look, which confirms the chord was added.
+     the same idea as the + button on a result card: the confirmation is on the button 
+
+     The button stays fully pressable, so tapping it again while green just adds the chord again and restarts the animation */
+  const ADDED_FLASH_MS = 5000;
+  const [justAdded, setJustAdded] = useState(false);
+  const flashTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // A fresh chord opening should never show the previous chord's leftover flash
+  useEffect(() => {
+    setJustAdded(false);
+  }, [match?.fullName, visible]);
+
+  useEffect(() => () => {
+    if (flashTimeout.current) clearTimeout(flashTimeout.current);
+  }, []);
+
+  const handleAddPress = useCallback(() => {
+    if (!onAddToProgression) return;
+    onAddToProgression();
+    setJustAdded(true);
+    if (flashTimeout.current) clearTimeout(flashTimeout.current);
+    flashTimeout.current = setTimeout(() => setJustAdded(false), ADDED_FLASH_MS);
+  }, [onAddToProgression]);
 
   if (!match) return null;
 
@@ -258,13 +283,21 @@ export function ChordDetailModal({
               </View>
             )}
 
-            {/* Add this chord straight to the progression from the breakdown */}
+            {/* Add this chord straight to the progression from the breakdown. Only
+                shown when adding is actually possible, so every press is a real add
+                and only a real add flashes it green. */}
             {onAddToProgression && (
               <Pressable
-                onPress={onAddToProgression}
-                style={[commonStyles.saveButton, { marginTop: 24, marginBottom: 8 }]}
+                onPress={handleAddPress}
+                style={[
+                  commonStyles.saveButton,
+                  justAdded && commonStyles.saveButtonAdded,
+                  { marginTop: 24, marginBottom: 8 },
+                ]}
               >
-                <Text style={commonStyles.saveButtonText}>Add to Progression</Text>
+                <Text style={[commonStyles.saveButtonText, justAdded && commonStyles.saveButtonTextAdded]}>
+                  {justAdded ? 'Added ✓' : 'Add to Progression'}
+                </Text>
               </Pressable>
             )}
 
