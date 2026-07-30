@@ -123,10 +123,36 @@ The risk with generating shapes rather than listing them is that the app confide
 
 Run: npm run test:voicings
 
-## Leftover Testing And Education (not started yet)
+### Edge Case Tests (added-tone and extended chords)
+
+The tests above already loop every chord type in the table for the basic checks, so the
+added-tone and extended chords (6ths, add9/add11, 6/9s, 9ths, 11ths, 13ths) were never
+actually untested, they just were not tested for anything specific to them. This was the
+one leftover item carried over from d6.
+
+What was actually worth checking that the general loop does not:
+- These are the only chords with real optional notes to drop, so at least one of them
+  actually has to drop one somewhere, or the essential/optional split in the chord table
+  would not be doing anything.
+- The busier ones (13ths especially) need four essential notes at once, so they need to
+  come back using at least that many strings.
+- The dominant 11th deliberately leaves the 3rd out of its essentials, because it clashes
+  with the 11th and real players drop it. This checks the generator can actually find a
+  shape without it, not just that the rule allows it to.
+- The extra notes make these the tightest fit for a tuning to still find a shape in, so
+  they get checked against all 9 tunings, not just standard.
+- The truncation filter (do not list a shape that is just a fuller shape with strings cut
+  off) gets re-checked against Cmaj13 instead of C major, since it is the densest chord in
+  the table and the most likely place for that filtering to miss something.
+
+New file: `src/tests/d7-edge-cases.ts`
+Changed: `package.json` (adds the test:edge-cases script)
+
+Run: npm run test:edge-cases
+
+## Leftover Education (not started yet)
 
 Carried over from d6, planned for later in this deliverable:
-- The extra edge case tests for the added-tone and extended chords, confirming the whole `test:chords` run still passes with them added.
 - The theory explanations for 'Chords That Fit' (issue 5): why a keys chords fit together, what the roman numerals mean, and short notes on how major and minor tend to feel.
 - A short walkthrough of the apps own features in the Settings screen (issue 6), separate from the music theory explanations already in the app (but share some info).
 
@@ -143,10 +169,10 @@ Carried over from d6, planned for later in this deliverable:
 - [X] Add the button that loads a voicing onto the fretboard. (found in `src/components/Results/VoicingBrowser.tsx`, `App.tsx`)
 - [X] Make the 'Chords That Fit' suggestions use the voicings, so a suggested chord can be loaded and strummed (closes issue 2 in `documents/d6-jul17-jul24/d6-issues.md`). (found in `src/components/Progression/FitChordsModal.tsx`)
 
-- [ ] Add the extra edge cases for the added-tone and extended chords and confirm the whole run passes.
-- [ ] Add the theory explanations to 'Chords That Fit'.
+- [ ] Add the extra edge cases for the added-tone and extended chords and confirm the whole run passes. (found in `src/tests/d7-edge-cases.ts`)
+- [X] Add the theory explanations to 'Chords That Fit'.
 - [ ] Add the in-app walkthrough of the app's features to the Settings screen.
-- [] Add small tweaks and polish to the UI, such as fixing issues, giving feedback to the user on button presses, and making the app feel more finished.
+- [X] Add small tweaks and polish to the UI, such as fixing issues, giving feedback to the user on button presses, and making the app feel more finished.
 
 - [ ] Sent app to both Google Play Store and Apple App Store for review, with the features up to d6.
 - [ ] Made app screenshots for both Google Play Store and Apple App Store.
