@@ -34,6 +34,8 @@ interface Props {
   email: string | null;
   autoBackup: boolean;           // whether saving a progression also copies it to the account
   onToggleAutoBackup: () => void;
+  restorableCloudCount: number;  // how many account progressions have no copy on this device yet
+  onTransferAllFromCloud: () => Promise<void>; // moves every one of those down to this device
   onSignIn: (email: string, password: string) => Promise<string | null>;
   onSignUp: (email: string, password: string) => Promise<string | null>;
   onSignOut: () => Promise<string | null>;
@@ -46,6 +48,8 @@ export function AccountModal({
   email,
   autoBackup,
   onToggleAutoBackup,
+  restorableCloudCount,
+  onTransferAllFromCloud,
   onSignIn,
   onSignUp,
   onSignOut,
@@ -57,6 +61,12 @@ export function AccountModal({
   const [error, setError] = useState<string | null>(null);
   // True while waiting on the server, so the button can be disabled and show a spinner
   const [isBusy, setIsBusy] = useState(false);
+
+  // The same idea for the two other things here that go to the network. Both used to
+  // sit there doing nothing visible until they finished, and signing out does not
+  // even close the sheet until it is done, which looked like the app had stopped.
+  const [isTransferring, setIsTransferring] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   const resetForm = useCallback(() => {
     setEmailText('');
@@ -126,6 +136,31 @@ export function AccountModal({
     );
   }, []);
 
+  /* Transferring takes the progressions off the account, so it asks first the same
+     way deleting one does. It is not destructive as such (they land on the phone
+     first, and only then come off the account) but it does mean they stop following
+     the user to another device, which is worth saying out loud before it happens. */
+  const handleTransferAll = useCallback(() => {
+    Alert.alert(
+      'Transfer to this phone',
+      `This moves ${restorableCloudCount} progression${restorableCloudCount === 1 ? '' : 's'} onto this device and removes ${restorableCloudCount === 1 ? 'it' : 'them'} from your account. ${restorableCloudCount === 1 ? 'It' : 'They'} will stay on this phone and will not be backed up again on their own.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Transfer',
+          onPress: async () => {
+            setIsTransferring(true);
+            try {
+              await onTransferAllFromCloud();
+            } finally {
+              setIsTransferring(false);
+            }
+          },
+        },
+      ],
+    );
+  }, [restorableCloudCount, onTransferAllFromCloud]);
+
   const handleSignOut = useCallback(() => {
     Alert.alert('Sign out', 'Your device saved progressions stay on this phone.', [
       { text: 'Cancel', style: 'cancel' },
@@ -133,7 +168,12 @@ export function AccountModal({
         text: 'Sign out',
         style: 'destructive',
         onPress: async () => {
-          await onSignOut();
+          setIsSigningOut(true);
+          try {
+            await onSignOut();
+          } finally {
+            setIsSigningOut(false);
+          }
           onClose();
         },
       },
@@ -185,8 +225,45 @@ export function AccountModal({
                     </View>
                   </Pressable>
 
-                  <Pressable onPress={handleSignOut} style={styles.signOutButton}>
-                    <Text style={styles.signOutText}>Sign out</Text>
+                  {/* Only shown when there is actually something to bring down: cloud
+                      progressions with no copy on this device yet. This one is a move
+                      rather than a copy, they come off the account once they are on
+                      the phone, so it asks first. */}
+                  {restorableCloudCount > 0 && (
+                    <Pressable
+                      onPress={handleTransferAll}
+                      disabled={isTransferring}
+                      style={[styles.restoreAllButton, isTransferring && { opacity: 0.7 }]}
+                    >
+                      {isTransferring ? (
+                        <>
+                          <ActivityIndicator size="small" color={COLORS.accentLight} />
+                          <Text style={styles.restoreAllSubtext}>Transferring...</Text>
+                        </>
+                      ) : (
+                        <>
+                          <Text style={styles.restoreAllText}>
+                            Transfer {restorableCloudCount} progression
+                            {restorableCloudCount === 1 ? '' : 's'} from the cloud to this phone
+                          </Text>
+                          <Text style={styles.restoreAllSubtext}>
+                            Moves them onto this device and removes them from your account
+                          </Text>
+                        </>
+                      )}
+                    </Pressable>
+                  )}
+
+                  <Pressable
+                    onPress={handleSignOut}
+                    disabled={isSigningOut}
+                    style={[styles.signOutButton, isSigningOut && { opacity: 0.7 }]}
+                  >
+                    {isSigningOut ? (
+                      <ActivityIndicator size="small" color={COLORS.textPrimary} />
+                    ) : (
+                      <Text style={styles.signOutText}>Sign out</Text>
+                    )}
                   </Pressable>
 
                   {/* Deleting the account is the most permanent thing here, so it sits
@@ -317,6 +394,30 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginTop: 4,
     marginBottom: 14,
+  },
+  // The bulk restore button: quieter than the main account actions since it is an
+  // occasional tidy-up rather than something used every visit to this screen
+  restoreAllButton: {
+    marginTop: 10,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.accent,
+    backgroundColor: COLORS.accentDim,
+    alignItems: 'center',
+  },
+  restoreAllText: {
+    color: COLORS.accentLight,
+    fontSize: 13,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  // Spells out that this is a move rather than a copy, right on the button
+  restoreAllSubtext: {
+    color: COLORS.textSecondary,
+    fontSize: 11,
+    textAlign: 'center',
+    marginTop: 3,
   },
   signOutButton: {
     backgroundColor: COLORS.bgElevated,

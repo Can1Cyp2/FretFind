@@ -35,6 +35,22 @@ if (supabase) {
   });
 }
 
+/* How long to give a request before deciding the connection is not there:*/
+const REQUEST_TIMEOUT_MS = 12000;
+
+/* Gives up on a request that takes too long: */
+export async function withTimeout<T>(work: PromiseLike<T>): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error('Network request failed')), REQUEST_TIMEOUT_MS);
+  });
+  try {
+    return await Promise.race([Promise.resolve(work), timeout]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
 // Shows user the error in a friendly way:
 export function describeError(error: unknown): string {
   const raw = extractMessage(error).trim();

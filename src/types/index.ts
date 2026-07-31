@@ -116,6 +116,10 @@ export interface SavedProgression {
   name: string;
   chords: ProgressionChord[];
   createdAt: number; // when it was saved (a milliseconds timestamp)
+  
+  // True only for a copy pulled back down from the cloud on purpose. 
+  // Auto backup skips these or esle a copy of something already on the account would get pushed straight back up as if it were new
+  restoredFromCloud?: boolean;
 }
 
 // --------------------
