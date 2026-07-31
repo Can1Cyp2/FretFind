@@ -19,6 +19,7 @@ So the planned parts are (not including any additional fixes or features I make 
 Right now the fretboard is hardcoded to standard tuning (`STANDARD_TUNING` from `src/constants/tunings.ts`), even though the `Tuning` type was designed back in d2 to support more than one. This deliverable makes that switchable (finally).
 
 The planned behaviour:
+
 - A tuning fork button sits to the right of the fretboard, in line with the string label letters at the top, on the opposite side from the 'O' open notes button at the nut.
 - Tapping it opens a popup listing common tunings (Standard, Drop D, Half Step Down, Full Step Down, Drop C, Open G, Open D, Open E, DADGAD), each showing its name and its open notes, styled to match the rest of the app's sheets.
 - The popup also has a custom tuning builder: a stepper per string to pick its open note, and a name box, saved on the device the same way progressions already are.
@@ -39,6 +40,7 @@ src/components/Fretboard/TuningModal.tsx
   -> the tuning popup: the common tuning list, the custom tuning list, and the builder
 
 Changed files:
+
 ```txt
 src/constants/tunings.ts
   -> adds COMMON_TUNINGS (Standard plus the other eight presets)
@@ -57,6 +59,7 @@ Up to now the app only ever knows the one shape the user happened to tap. It can
 This is also what issue 2 in `documents/d6-jul17-jul24/d6-issues.md` was blocked on. I did not want to hardcode one fixed shape per chord for the 'Chords That Fit' list when the real answer was always going to be a voicing feature, so I left it open. This is that feature, so that issue gets closed by it rather than worked around.
 
 The planned behaviour:
+
 - The chord info popup gains a Voicings section, showing one shape at a time as a small fretboard diagram with the fret numbers and the muted strings marked.
 - The shapes are scrollable, so the user can page through the different ways to play that chord, ordered with the most common and most playable first.
 - Each voicing has a button that loads it straight onto the main fretboard, so the user can see it in place, hear it, and add it to a progression from there.
@@ -79,6 +82,7 @@ This is the same brute force and score approach the chord matcher and the key ma
 ## Current Scope: (d7, voicings)
 
 New files:
+
 ```txt
 src/engine/voicingGenerator.ts
   -> works out and ranks the playable shapes for a chord in the current tuning
@@ -113,6 +117,7 @@ package.json
   -> adds the test:voicings script
 
 ### Testing The Shapes
+
 The risk with generating shapes rather than listing them is that the app confidently shows something no one would ever play, so my plan is the tests will check the generated shapes against ones I already know are right, the plan:
 
 - The top ranked shape for C, Em, G, Am, D, Cmaj7 and A5 has to come out as the exact open shape a beginner learns first (for example C has to be `x 3 2 0 1 0`).
@@ -131,6 +136,7 @@ actually untested, they just were not tested for anything specific to them. This
 one leftover item carried over from d6.
 
 What was actually worth checking that the general loop does not:
+
 - These are the only chords with real optional notes to drop, so at least one of them
   actually has to drop one somewhere, or the essential/optional split in the chord table
   would not be doing anything.
@@ -153,6 +159,7 @@ Run: npm run test:edge-cases
 ## Leftover Education (not started yet)
 
 Carried over from d6, planned for later in this deliverable:
+
 - The theory explanations for 'Chords That Fit' (issue 5): why a keys chords fit together, what the roman numerals mean, and short notes on how major and minor tend to feel.
 - A short walkthrough of the apps own features in the Settings screen (issue 6), separate from the music theory explanations already in the app (but share some info).
 
@@ -163,17 +170,16 @@ Carried over from d6, planned for later in this deliverable:
 - [X] Add the tuning popup with common tunings, and switching tunings (found in `src/components/Fretboard/TuningModal.tsx`)
 - [X] Add the custom tuning builder with local saving, renaming, and deleting. (found in `src/hooks/useTunings.ts`, `src/components/Fretboard/TuningModal.tsx`)
 - [X] Clear the fretboard selection when the tuning changes (I may change this or make it an option - that has not been decided yet). (found in `App.tsx`)
-
 - [X] Add the voicing generator that works out the playable shapes for a chord in the current tuning. (found in `src/engine/voicingGenerator.ts`)
 - [X] Add the scrollable voicings section to the chord info popup, most common shape first. (found in `src/components/Results/VoicingBrowser.tsx`, `VoicingDiagram.tsx`, `ChordDetailModal.tsx`, `ResultsPanel.tsx`)
 - [X] Add the button that loads a voicing onto the fretboard. (found in `src/components/Results/VoicingBrowser.tsx`, `App.tsx`)
 - [X] Make the 'Chords That Fit' suggestions use the voicings, so a suggested chord can be loaded and strummed (closes issue 2 in `documents/d6-jul17-jul24/d6-issues.md`). (found in `src/components/Progression/FitChordsModal.tsx`)
-
-- [ ] Add the extra edge cases for the added-tone and extended chords and confirm the whole run passes. (found in `src/tests/d7-edge-cases.ts`)
+- [X] Add the extra edge cases for the added-tone and extended chords and confirm the whole run passes. (found in `src/tests/d7-edge-cases.ts`)
 - [X] Add the theory explanations to 'Chords That Fit'.
 - [ ] Add the in-app walkthrough of the app's features to the Settings screen.
 - [X] Add small tweaks and polish to the UI, such as fixing issues, giving feedback to the user on button presses, and making the app feel more finished.
+- [ ] Fix cloud progressions from duplicate saves (which is a d6 leftover issue)
 
-- [ ] Sent app to both Google Play Store and Apple App Store for review, with the features up to d6.
-- [ ] Made app screenshots for both Google Play Store and Apple App Store.
-- [ ] Made a logo for the app.
+- [X] Sent app to both Google Play Store and Apple App Store for review, with the features up to d6.
+- [X] Made app screenshots for both Google Play Store and Apple App Store.
+- [X] Made a logo for the app.
