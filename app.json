@@ -2,26 +2,39 @@
   "expo": {
     "name": "FretFind",
     "slug": "FretFind",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/AppIcon.png",
     "userInterfaceStyle": "light",
     "ios": {
       "bundleIdentifier": "com.SebastianLandry.FretFind",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.can1cyp2.fretfind",
+      "versionCode": 2,
+      "icon": "./assets/AppIcon.png",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundColor": "#111118",
+        "foregroundImage": "./assets/android-adaptive-foreground.png"
       },
       "predictiveBackGestureEnabled": false
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "./plugins/withAndroidReleaseSigning",
+      "./plugins/withWindowsGradleTrustStore"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "d8a48a37-4da9-47dd-b23f-a0300f6055ce"
+      }
+    },
+    "owner": "can1cyp2"
   }
 }
