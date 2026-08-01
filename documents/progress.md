@@ -957,3 +957,145 @@ Hopefully I can add some this last minute, or it will be pushed to d7, per the p
 - [X] Add opt-in cloud saving and loading for progressions, with RLS protections, and merge the info site and account entry point into the app. (At the last few hours of the day I was able to add this, but I have not been able to test the front-backend connection, plus for account deletion I simply direct users to the website, which is fine but not ideal, I may change this later)
 - [ ] Fix the results panel scrollbar overlap - ((Actually upon closer inspection, it is not that big of an issue, so I may just leave it as is, it is not blocking anything and functions fine))
 - [ ] Add the extra edge cases for the added-tone and extended chords and confirm the whole run passes.
+
+---
+
+# Deliverable 7 (d7): Alternate Tunings, Chord Voicings, and Cloud Fixes
+
+Date range: July 24, 2026 - July 31, 2026
+
+Covers alternate tunings, the chord voicings feature, the leftover education items from d6, and fixes to the cloud saved progressions and other perfomance issues. The full plan is in `documents/d7-jul24-jul31/d7-July31st_plan.md`, and the issues found along the way (with their fixes) are in `documents/d7-jul24-jul31/d7-issues.md`
+
+## What This Deliverable Covers:
+This deliverable was planned as a smaller one: alternate tunings as the main new feature, and the rest of the time on items pushed out of d6 rather than a big new chunk of the contract. That mostly stayed true, except the cloud fixes took far more of the week than I expected, along with what I thought was the issue which was fixing performance problems, which is beneficial in the long run but was not the original plan or issue causing the progressions file to freeze.
+
+The current screen has the following features for d7 (on top of d6):
+- A tuning fork button beside the fretboard opens a tuning popup: common tunings (Standard, Drop D, Half Step Down, Full Step Down, Drop C, Open G, Open D, Open E, DADGAD, etc.), plus a custom tuning builder that saves on the device and can rename and delete.
+- The chord info popup has a Shapes section: the different ways that chord can actually be played in the current tuning, paged through one at a time as a diagram, with a button that loads the chosen one onto the fretboard so it can be heard and strummed.
+- 'Chords That Fit' explains itself now instead of just listing roman numerals, so someone with no theory background can read why the chords in a key belong together.
+- Cloud saved progressions no longer duplicate themselves and a progression lives in one place rather than two: once it is on the account it comes off the device list, with buttons to move it back either one at a time or all at once. (Eventually I want to add an icon and option to show if a progression that is in the cloud is downloaded for offline use, but that is future work not for the sake of this project)
+
+The in-app walkthrough in Settings is started but not finished, so it is not in the list above. It carries over to the next deliverable (d8).
+
+## Deliverable 7 Timeline
+| Date             | Deliverable                                          | Status                          | Output                                                                     |
+| ---------------- | ---------------------------------------------------- | ------------------------------- | -------------------------------------------------------------------------- |
+| July 24, 2026    | Plan document                                        | Complete                        | `documents/d7-jul24-jul31/d7-July31st_plan.md`                            |
+| July 24-26, 2026 | Common tunings list and tuning popup                 | Complete                        | `src/constants/tunings.ts`, `src/components/Fretboard/TuningModal.tsx` |
+| July 24-26, 2026 | Custom tuning builder with local saving              | Complete                        | `src/hooks/useTunings.ts`                                                 |
+| July 26-28, 2026 | Voicing generator                                    | Complete                        | `src/engine/voicingGenerator.ts`                                          |
+| July 26-28, 2026 | Shapes section in the chord info popup               | Complete                        | `src/components/Results/VoicingBrowser.tsx`, `VoicingDiagram.tsx`       |
+| July 28, 2026    | Voicing tests and the pushed-back edge case tests    | Complete                        | `src/tests/d7-voicing-tests.ts`, `src/tests/d7-edge-cases.ts`           |
+| July 29, 2026    | 'Chords That Fit' theory explanations (d6 issue 5)   | Complete                        | `src/components/Progression/FitChordsModal.tsx`                           |
+| July 31, 2026    | In-app walkthrough in Settings (d6 issue 6)          | Started, not finished           | Carried to the d8 deliverable                                            |
+| July 29-31, 2026 | Cloud duplicate saves fix and device/cloud split     | Complete                        | `src/hooks/useAutoBackup.ts`, `src/services/cloudProgressions.ts`        |
+| July 30-31, 2026 | Loading and error states for anything hitting cloud  | Complete                        | `src/components/Progression/ProgressionManager.tsx`                       |
+| July 31, 2026    | Suggested chords saving with no shape (d7 issue 6)   | Complete                        | `src/components/Results/VoicingBrowser.tsx`, `ChordDetailModal.tsx`      |
+| July 29-31, 2026 | App freezing on progression actions                  | Complete                        | `src/hooks/useProgression.ts` and others, (see below)                       |
+| July 24-31, 2026 | Store submissions, screenshots, logo                 | Complete                        | Sent to both stores with the features up to d6                             |
+
+## Current Scope: (d7)
+
+New files:
+```txt
+src/hooks/useTunings.ts
+src/components/Fretboard/TuningButton.tsx
+src/components/Fretboard/TuningModal.tsx
+src/engine/voicingGenerator.ts
+src/components/Results/VoicingBrowser.tsx
+src/components/Results/VoicingDiagram.tsx
+src/components/common/WalkthroughModal.tsx
+src/tests/d7-voicing-tests.ts
+src/tests/d7-edge-cases.ts
+```
+
+Changed files:
+```txt
+App.tsx                                    -> the tuning state, loading a shape onto the fretboard, the cloud handlers
+src/types/index.ts                         -> the ChordVoicing type, the restored from cloud flag
+src/constants/tunings.ts                   -> the nine common tunings
+src/constants/musicTheory.ts               -> the explanation behind the Shapes 'i' button
+src/components/Fretboard/Fretboard.tsx     -> the tuning button, and memoized so it stops redrawing on unrelated changes
+src/components/Results/ChordDetailModal.tsx, ResultsPanel.tsx -> the Shapes section, passing the tuning through
+src/components/Progression/FitChordsModal.tsx        -> the theory explanations, suggested chords keeping their shape
+src/components/Progression/ProgressionManager.tsx      -> the device button, loading states, the restored note
+src/components/common/AccountModal.tsx, SettingsModal.tsx -> the transfer button, the walkthrough entry point
+src/hooks/useProgression.ts, useAutoBackup.ts, useCloudProgressions.ts -> the cloud fixes below
+src/services/cloudProgressions.ts, supabase.ts, src/hooks/useAuth.ts   -> the matching key and the request timeout
+package.json                              -> the test:voicings and test:edge-cases scripts
+```
+
+## Alternate Tunings
+ 
+The `Tuning` type was designed in d2 to hold more than one tuning, as I knew this was a feature that I wanted to add, but the fretboard had been hardcoded to standard ever since. This made it switchable: I made tuning presets for common tunings, a custom builder with a stepper per string and local saving the same way progressions already work.Switching tuning clears whatever is selected, since the same fret means a different note under a different tuning and leaving the old selection there would be saying something that is no longer true.
+
+The one thing worth repeating here from the plan file is that the custom builder exposed a design mistake I made back in d2, where the octave of each string was bolted on as a separate array rather than derived from the note itself, so stepping a string down past the bottom of an octave got the wrong octave and therefore the wrong sound. (That is written up properly as issue 4 in the d7 issues file, since the lesson matters more than the fix did)
+
+
+## Chord Voicings And Shapes
+The app could only ever name the one shape the user happened to tap. Since the whole point is learning the fretboard, and a chord being playable in five different places is most of what makes the fretboard hard to learn, this was a real gap.
+
+Now, nothing is hardcoded. Hardcoding would mean a table of six fret numbers for every chord type at every root, hundreds of rows that would all be wrong the moment the tuning changed, which d7 had just implemented. So the shapes are generated from the tuning using the same brute force and score approach the chord matcher and key matcher already use (which is almost instant): find where each chord note lives on each string, slide a four fret window up the neck, pick one note per string or mute it, throw out anything missing an essential note or needing more than four fingers, then score for playability. The full six step breakdown is in the plan file.
+
+This also closed issue 2 from d6, which I had deliberately left open rather than hardcoding a single fixed shape per chord for the suggestions list. My instinct in that entry that shapes low on the neck should be favoured turned out to be right, it ended up as one of the scoring terms, which is a good sign that the approach is working as intended, however, I do find it misses out on common chord voicings which likely need to be hardcoded.
+
+## Cloud Saved Progressions Rework
+
+The cloud saving went in during the last few hours of d6 and had never really been used. Once it was, three separate problems showed up:
+
+1. **Duplicates:** Deleting a progression from the account did not delete the device copy, so the next automatic backup pass saw a progression that was not on the account and uploaded it again. The account slowly refilled with copies of things I had deleted. The fix was to stop letting the same progression live in both places: once it is safely on the account, the device copy deletess. There is then nothing left sitting around for a later cloud delete to bring back.
+
+2. **Getting it back:** Since a progression now leaves the device once it is backed up, there had to be a way back the other direction. Each cloud row has a device button that copies that one down while leaving the account copy alone. And Settings has a transfer button that moves everything down in one go and clears it off the account. Anything brought back to the device is flagged so the automatic backup leaves it alone, since the user purposefully moved it to be local, otherwise it would be pushed straight back up the moment it landed, and that flag is what the little note under those rows is explaining.
+
+3. **Telling the two apart:** The check for whether something was already backed up used to be the progression name plus the shape of every chord. That now includes each chords name as well, so a match means all three of the progression name, every chord name, and every chord shape line up. Neither half is enough alone: the same name can be two different chords in two tunings and the same frets in two tunings sound as two different chords.
+
+I also added a twelve second timeout to every request. Nothing in the client stops one on its own, so on a bad connection a request just sat there until the phone gave up, and everything waiting on it waited too. The account list would say it was loading forever and a tapped button would stay spinning, which is indistinguishable from the app being stuck. Failing after a sensible wait turns all of that into an error that can be shown and retried instead.
+
+## The Freezing Problem
+
+Separate from the above, the app was freezing on ordinary progression actions: saving, reordering, loading. I went at this several times and got it wrong more than once, first blaming render cost and then blaming the network, so it is worth writing down honestly.
+
+The actual defect I eventually found is a real coding mistake rather than a performance one. `saveProgression` and `loadProgression` were each calling one lists setter from inside the other lists updater function, using an updater as a way to read the current value of the other list. React requires those updaters to be pure, and breaking that has two consequences that both fit the symptoms: it fires the "cannot update a component while rendering a different component" warning on every save and load, and in development React deliberately runs updaters twice to expose exactly this, which means every save was quietly saving two copies. That second part probably fed the duplicates as well. Both callbacks now read through refs and doone plain state update.
+
+Alongside that I memoized the fretboard, the progression strip and the two progression sheets, and stopped the closed 'Chords That Fit' sheet re-ranking all 24 keys on every progression change.
+
+The lesson I am taking from this one is that I spent too long guessing at causes that fit the symptom before actually reading the code that runs on the actions I was told were slow. Both of the wrong answers were plausible, which is exactly why neither was worth acting on without checking first. I do think I took the route of most probable, but should have accounted for the weird facts that did not fit that theory, and I should have read the code sooner. I will remember that for the next time.
+
+## Testing
+
+Two new test files this deliverable, both plain TypeScript run from the console like the existing ones.
+
+The voicing tests check the generated shapes against ones I already know are right: the top shape for C, Em, G, Am, D, Cmaj7 and A5 has to be the exact open shape a beginner learns first, all 2976 generated shapes have to contain their chord's essential notes and fit a four fret stretch on four fingers or fewer, and the same chord in Standard and in Drop D has to come back with different frets, which is what proves the tuning is being read rather than a table looked up.
+
+The edge case tests were leftover from d6. The added-tone and extended chords were never actually untested, since the voicing tests loop every chord type, they just had nothing checking what is specific to them: that at least one of them really does drop an optional note, that the busier ones come back using enough strings, that the dominant 11th can find a shape without its 3rd and that all of it still holds across all nine common tunings. I may want to test this with custom tunings too, but I think the nine common ones are enough for now, since they cover the most likely (realistic) edge cases.
+
+```bash
+npm run test:voicings
+```
+
+npm run test:edge-cases
+
+## Done By July 31, 2026 checklist (checkmarks indicate complete, X marks incomplete):
+
+- [X] Add the common tunings list. (found in `src/constants/tunings.ts`)
+- [X] Add the tuning fork button and the tuning popup with switching. (found in `src/components/Fretboard/TuningButton.tsx`, `TuningModal.tsx`)
+- [X] Add the custom tuning builder with local saving, renaming, and deleting. (found in `src/hooks/useTunings.ts`)
+- [X] Clear the fretboard selection when the tuning changes. (found in `App.tsx`)
+- [X] Add the voicing generator for the current tuning. (found in `src/engine/voicingGenerator.ts`)
+- [X] Add the scrollable Shapes section, most common shape first, with the load button. (found in `src/components/Results/VoicingBrowser.tsx`, `VoicingDiagram.tsx`)
+- [X] Make 'Chords That Fit' use the voicings, closing issue 2 from d6. (found in `src/components/Progression/FitChordsModal.tsx`)
+- [X] Add the voicing tests and the pushed-back edge case tests, and confirm both runs pass. (found in `src/tests/d7-voicing-tests.ts`, `src/tests/d7-edge-cases.ts`)
+- [X] Add the theory explanations to 'Chords That Fit', closing issue 5 from d6. (found in `src/components/Progression/FitChordsModal.tsx`) - I want to add more explanations in detail, which will be moved to d8 deliverable, but the main explanation is there and the issue is closed as of d7s expectations.
+- [X] Fix the cloud progressions duplicating themselves, and stop a progression living on the device and the account at once. (found in `src/hooks/useAutoBackup.ts`)
+- [X] Add a way to bring progressions back from the account, individually and all at once. (found in `src/components/Progression/ProgressionManager.tsx`, `src/components/common/AccountModal.tsx`)
+- [X] Add loading and error states to everything that goes to the cloud, and a timeout so a request cannot hang forever. (found in `src/services/supabase.ts`, `src/components/Progression/ProgressionManager.tsx`)
+- [X] Fix suggested chords going into the progression with no shape. (found in `src/components/Results/VoicingBrowser.tsx`, `ChordDetailModal.tsx`)
+- [X] Fix the app freezing on progression actions. (found in `src/hooks/useProgression.ts`)
+- [X] Send the app to both stores for review, with screenshots and a logo.
+- [X] Update the progress file with everything done this deliverable. (found in `documents/progress.md`)
+
+Not finished this deliverable:
+- [ ] Add the in-app walkthrough of the app's features to Settings (issue 6 from d6). - I started on it but did not get it finished, so it carries to the next deliverable.
+- [ ] Track down the "Text strings must be rendered within a `<Text>` component" error (issue 3 in `documents/d6-jul17-jul24/d6-issues.md`), which is still being logged, but have not found the cause yet. It is not blocking anything, but I would like to fix it before the next store submission (final before projects due date)
+
+(Also, I would like to add more theory explanations to the Chords That Fit section, but what was done here is enough to close the checklist item for d7, so the rest more thorough explanations will be moved to d8, which is the last deliverable and has more time for polish and education features, as I had originally planned)
