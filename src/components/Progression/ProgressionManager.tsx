@@ -8,15 +8,23 @@
 
    When someone is signed in there is a second list underneath for progressions
    saved to the cloud, which work the same way but follow the account to another
-   device. Signed out, that section is simply not there. */
+   device. Signed out, that section is simply not there.
 
-import React, { useCallback, useMemo, useState } from 'react';
+   Once a progression is on the account (auto backup, or the cloud button), it
+   drops out of the device list entirely, the two lists are meant to stay mutually
+   exclusive rather than showing the same progression twice. The device button on a
+   cloud row is the way back the other way: it copies that one down onto the device
+   without removing it from the account, and that copy is flagged so it will not
+   just get pushed straight back up, which the little note under it explains. */
+
+import React, { memo, useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { ProgressionChord, SavedProgression } from '../../types';
 import { COLORS } from '../../styles/colors';
 import { commonStyles } from '../../styles/commonStyles';
 import { formatChordName } from '../../engine/chordNamer';
 import { backupKey } from '../../services/cloudProgressions';
+import { AutoBackupStatus } from '../../hooks/useAutoBackup';
 
 interface Props {
   visible: boolean;
@@ -33,15 +41,24 @@ interface Props {
   cloudProgressions: SavedProgression[];
   isCloudLoading: boolean;
   cloudError: string | null;
-  onSaveToCloud: (name: string) => void;
+  // The cloud actions are awaited so the one button that started them can show a
+  // spinner for exactly as long as it is actually waiting
+  onSaveToCloud: (name: string) => Promise<void>;
+  onRefreshCloud: () => void;    // fetches the account list again after it failed
   onLoadFromCloud: (id: string) => void;
-  onDeleteFromCloud: (id: string) => void;
+  onDeleteFromCloud: (id: string) => Promise<void>;
   onRenameInCloud: (id: string, name: string) => void;
   // Backs up one already saved device progression to the account (the cloud button)
-  onBackUpProgression: (saved: SavedProgression) => void;
+  onBackUpProgression: (saved: SavedProgression) => Promise<void>;
+  // Copies one cloud progression back onto this device (the device button)
+  onRestoreFromCloud: (cloudProgression: SavedProgression) => void;
+  // What the automatic backup is up to, so the sheet can show it rather than the
+  // uploading and any failures happening invisibly
+  isAutoBackupOn: boolean;
+  backupStatus: AutoBackupStatus;
 }
 
-export function ProgressionManager({
+function ProgressionManagerComponent({
   visible,
   onClose,
   progression,
@@ -56,12 +73,32 @@ export function ProgressionManager({
   isCloudLoading,
   cloudError,
   onSaveToCloud,
+  onRefreshCloud,
   onLoadFromCloud,
   onDeleteFromCloud,
   onRenameInCloud,
   onBackUpProgression,
+  onRestoreFromCloud,
+  isAutoBackupOn,
+  backupStatus,
 }: Props) {
   const [saveName, setSaveName] = useState('');
+
+  const [backingUpId, setBackingUpId] = useState<string | null>(null);
+  const [deletingCloudId, setDeletingCloudId] = useState<string | null>(null);
+  const [isSavingToCloud, setIsSavingToCloud] = useState(false);
+
+  const handleBackUpRow = useCallback(
+    async (sp: SavedProgression) => {
+      setBackingUpId(sp.id);
+      try {
+        await onBackUpProgression(sp);
+      } finally {
+        setBackingUpId(null);
+      }
+    },
+    [onBackUpProgression],
+  );
 
   // Which saved progression is being renamed right now, and the text typed so far:
   const [renamingId, setRenamingId] = useState<string | null>(null);
@@ -100,11 +137,16 @@ export function ProgressionManager({
 
   // The cloud versions of the three actions. They do the same thing as the device
   // ones, just against the account instead of this phone.
-  const handleSaveToCloud = useCallback(() => {
-    if (progression.length === 0) return;
-    onSaveToCloud(saveName);
-    setSaveName('');
-  }, [progression.length, saveName, onSaveToCloud]);
+  const handleSaveToCloud = useCallback(async () => {
+    if (progression.length === 0 || isSavingToCloud) return;
+    setIsSavingToCloud(true);
+    try {
+      await onSaveToCloud(saveName);
+      setSaveName('');
+    } finally {
+      setIsSavingToCloud(false);
+    }
+  }, [progression.length, saveName, onSaveToCloud, isSavingToCloud]);
 
   const handleLoadFromCloud = useCallback(
     (id: string) => {
@@ -118,7 +160,18 @@ export function ProgressionManager({
     (id: string, name: string) => {
       Alert.alert('Delete Progression', `Delete "${name}" from the cloud?`, [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: () => onDeleteFromCloud(id) },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            setDeletingCloudId(id);
+            try {
+              await onDeleteFromCloud(id);
+            } finally {
+              setDeletingCloudId(null);
+            }
+          },
+        },
       ]);
     },
     [onDeleteFromCloud],
@@ -141,63 +194,127 @@ export function ProgressionManager({
     [onAccountKeys],
   );
 
+  /* The reverse check for the cloud list: whether a cloud progression already has a
+     copy on this device, so the restore button only ever offers to bring down
+     something that is not already here. */
+  const onDeviceKeys = useMemo(() => new Set(savedProgressions.map(backupKey)), [savedProgressions]);
+  const isOnDevice = useCallback(
+    (sp: SavedProgression) => onDeviceKeys.has(backupKey(sp)),
+    [onDeviceKeys],
+  );
+
   /* One row in either list. The device list and the cloud list look and behave the
      same, so they share this instead of the whole block being written out twice.
      The rename handler is passed in, since which list the row belongs to decides
      whether the new name goes to the phone or the account.
      onBackUpRow is only given for device rows that are not on the account yet, and
-     puts the little cloud button on that row. */
+     puts the little cloud button on that row. onRestoreRow is the same idea in
+     reverse, only given for cloud rows with no copy on this device yet. */
   const renderSavedRow = (
     sp: SavedProgression,
     onLoadRow: (id: string) => void,
     onDeleteRow: (id: string, name: string) => void,
     onRenameRow: (id: string, name: string) => void,
     onBackUpRow?: () => void,
+    onRestoreRow?: () => void,
   ) => (
-    <View key={sp.id} style={styles.savedRow}>
-      {/* Tapping the name area starts a rename in place */}
-      <Pressable style={styles.savedInfo} onPress={() => handleStartRename(sp.id, sp.name)}>
-        {renamingId === sp.id ? (
-          <TextInput
-            value={renameText}
-            onChangeText={setRenameText}
-            onBlur={() => {
-              if (renameText.trim()) onRenameRow(sp.id, renameText.trim());
-              setRenamingId(null);
-              setRenameText('');
-            }}
-            onSubmitEditing={() => {
-              if (renameText.trim()) onRenameRow(sp.id, renameText.trim());
-              setRenamingId(null);
-              setRenameText('');
-            }}
-            autoFocus
-            style={styles.renameInput}
-          />
-        ) : (
-          <>
-            <Text style={styles.savedName}>{sp.name}</Text>
-            <Text style={styles.savedMeta}>
-              {sp.chords.length} chord{sp.chords.length !== 1 ? 's' : ''}
-            </Text>
-          </>
-        )}
-      </Pressable>
-      <View style={styles.savedActions}>
-        {/* Only on device rows that are not on the account yet: one tap backs this
-            one up, without having to load it and save it again */}
-        {onBackUpRow && (
-          <Pressable onPress={onBackUpRow} style={styles.backUpButton} hitSlop={4}>
-            <Text style={styles.backUpIcon}>{'☁'}</Text>
+    <View key={sp.id} style={styles.savedRowWrapper}>
+      <View style={[styles.savedRow, sp.restoredFromCloud && styles.savedRowWithNote]}>
+        {/* Tapping the name area starts a rename in place. Once it is a box, this
+            stands down: it wraps the box, so tapping into the text to move the
+            cursor was counting as another tap on the name and starting the rename
+            over, throwing away whatever had been typed so far. */}
+        <Pressable
+          style={styles.savedInfo}
+          onPress={() => handleStartRename(sp.id, sp.name)}
+          disabled={renamingId === sp.id}
+        >
+          {renamingId === sp.id ? (
+            <TextInput
+              value={renameText}
+              onChangeText={setRenameText}
+              onBlur={() => {
+                if (renameText.trim()) onRenameRow(sp.id, renameText.trim());
+                setRenamingId(null);
+                setRenameText('');
+              }}
+              onSubmitEditing={() => {
+                if (renameText.trim()) onRenameRow(sp.id, renameText.trim());
+                setRenamingId(null);
+                setRenameText('');
+              }}
+              autoFocus
+              style={styles.renameInput}
+            />
+          ) : (
+            <>
+              <Text style={styles.savedName}>{sp.name}</Text>
+              <Text style={styles.savedMeta}>
+                {sp.chords.length} chord{sp.chords.length !== 1 ? 's' : ''}
+              </Text>
+              {/* A device row that auto backup has not got to yet. A cloud row can
+                  never match this, its own key is always on the account, so the one
+                  check covers both lists without needing to know which it is in. */}
+              {isSignedIn && isAutoBackupOn && !sp.restoredFromCloud && !isBackedUp(sp) && (
+                <Text style={styles.pendingNote}>
+                  {backupStatus.backupError ? 'Not backed up yet' : 'Waiting to back up...'}
+                </Text>
+              )}
+            </>
+          )}
+        </Pressable>
+        <View style={styles.savedActions}>
+          {/* On device rows while signed in: one tap sends this one to the account,
+              without having to load it and save it again. It shows a spinner in
+              place of the icon while that is actually happening. */}
+          {onBackUpRow && (
+            <Pressable
+              onPress={onBackUpRow}
+              disabled={backingUpId === sp.id}
+              style={styles.backUpButton}
+              hitSlop={4}
+            >
+              {backingUpId === sp.id ? (
+                <ActivityIndicator size="small" color={COLORS.accentLight} />
+              ) : (
+                <Text style={styles.backUpIcon}>{'☁'}</Text>
+              )}
+            </Pressable>
+          )}
+          {/* Only on cloud rows with no copy on this device yet: one tap copies it down */}
+          {onRestoreRow && (
+            <Pressable onPress={onRestoreRow} style={styles.restoreButton} hitSlop={4}>
+              <Text style={styles.restoreIcon}>{'📱'}</Text>
+            </Pressable>
+          )}
+          <Pressable onPress={() => onLoadRow(sp.id)} style={styles.loadButton}>
+            <Text style={styles.loadText}>Load</Text>
           </Pressable>
-        )}
-        <Pressable onPress={() => onLoadRow(sp.id)} style={styles.loadButton}>
-          <Text style={styles.loadText}>Load</Text>
-        </Pressable>
-        <Pressable onPress={() => onDeleteRow(sp.id, sp.name)} style={commonStyles.deleteButton}>
-          <Text style={commonStyles.deleteButtonText}>Delete</Text>
-        </Pressable>
+          {/* Only a cloud delete actually goes to the network, a device one is
+              instant, so only that one ever sits here spinning */}
+          <Pressable
+            onPress={() => onDeleteRow(sp.id, sp.name)}
+            disabled={deletingCloudId === sp.id}
+            style={commonStyles.deleteButton}
+          >
+            {deletingCloudId === sp.id ? (
+              <ActivityIndicator size="small" color={COLORS.danger} />
+            ) : (
+              <Text style={commonStyles.deleteButtonText}>Delete</Text>
+            )}
+          </Pressable>
+        </View>
       </View>
+      {/* Only on a device copy that was pulled down from the cloud on purpose, so it
+          is clear why this one will not simply reappear on the account by itself: */}
+      {sp.restoredFromCloud && (
+        <View style={styles.restoredNoteBar}>
+          <Text style={styles.restoredNoteIcon}>{'📱'}</Text>
+          <Text style={styles.restoredNoteText}>
+            Restored copy, will not be automatically returned to cloud
+          </Text>
+        </View>
+      )}
     </View>
   );
 
@@ -210,9 +327,15 @@ export function ProgressionManager({
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-      {/* Tapping the dark area outside the sheet closes it, taps inside the sheet stay put */}
-      <Pressable style={commonStyles.modalOverlay} onPress={onClose}>
-        <Pressable style={commonStyles.modalContent} onPress={event => event.stopPropagation()}>
+      {/* The dark backdrop is its own layer sitting behind the sheet, not wrapped
+          around it. Wrapped around, it covered every row and button in here and won
+          the touch before they got it, so taps in the list needed a second go and
+          the start of every scroll stuck for a moment. That is what made the panel
+          feel like it kept locking up, even though nothing was actually stuck. The
+          other list sheets were already moved to this shape for the same reason. */}
+      <View style={commonStyles.modalOverlay}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+        <View style={commonStyles.modalContent}>
           <View style={commonStyles.modalHandle} />
           <View style={commonStyles.modalHeader}>
             <Text style={commonStyles.modalTitle}>Progressions</Text>
@@ -221,7 +344,14 @@ export function ProgressionManager({
             </Pressable>
           </View>
 
-          <ScrollView showsVerticalScrollIndicator={false}>
+          {/* Without this, a scroll view throws away the first tap that lands while
+              the keyboard is up and uses it to close the keyboard instead. This
+              sheet has a name box at the top and turns a row's name into a box to
+              rename it, so once either had been typed in, the next tap on Load,
+              Delete or the cloud button did nothing at all and had to be repeated.
+              'handled' delivers the tap to the button and lets the keyboard go at
+              the same time. */}
+          <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
             {progression.length > 0 && (
               <>
                 <Text style={commonStyles.sectionTitle}>Current Progression</Text>
@@ -241,8 +371,16 @@ export function ProgressionManager({
                   </View>
                   {/* Signed in, the same name can also be sent to the account instead */}
                   {isSignedIn && (
-                    <Pressable onPress={handleSaveToCloud} style={styles.cloudSaveButton}>
-                      <Text style={styles.cloudSaveText}>Save to cloud</Text>
+                    <Pressable
+                      onPress={handleSaveToCloud}
+                      disabled={isSavingToCloud}
+                      style={[styles.cloudSaveButton, isSavingToCloud && { opacity: 0.7 }]}
+                    >
+                      {isSavingToCloud ? (
+                        <ActivityIndicator size="small" color={COLORS.accentLight} />
+                      ) : (
+                        <Text style={styles.cloudSaveText}>Save to cloud</Text>
+                      )}
                     </Pressable>
                   )}
                 </View>
@@ -252,6 +390,33 @@ export function ProgressionManager({
             <Text style={commonStyles.sectionTitle}>
               {isSignedIn ? 'Saved On This Device' : 'Saved Progressions'}
             </Text>
+
+            {/* What the automatic backup is doing right now: Before this, uploading
+                and failing both happened completely silently, so a progression could
+                sit on the device unbacked up with nothing on screen saying so. The
+                failure case gets a Retry, since a failed run deliberately stops
+                rather than hammering a connection that is not there */}
+            {isSignedIn && isAutoBackupOn && backupStatus.backupError && (
+              <View style={styles.syncBarError}>
+                <Text style={styles.syncErrorText}>
+                  Could not reach the cloud. {backupStatus.pendingCount} progression
+                  {backupStatus.pendingCount === 1 ? '' : 's'} still to back up.
+                </Text>
+                <Pressable onPress={backupStatus.retryBackup} style={styles.retryButton}>
+                  <Text style={styles.retryText}>Retry</Text>
+                </Pressable>
+              </View>
+            )}
+            {isSignedIn && isAutoBackupOn && !backupStatus.backupError && backupStatus.isBackingUp && (
+              <View style={styles.syncBar}>
+                <ActivityIndicator size="small" color={COLORS.accentLight} />
+                <Text style={styles.syncText}>
+                  Backing up {backupStatus.pendingCount} progression
+                  {backupStatus.pendingCount === 1 ? '' : 's'} to your account...
+                </Text>
+              </View>
+            )}
+
             {savedProgressions.length === 0 ? (
               <Text style={styles.emptyText}>
                 No saved progressions yet. Add chords to a progression and save it here.
@@ -263,11 +428,13 @@ export function ProgressionManager({
                   handleLoad,
                   handleDelete,
                   onRename,
-                  // The cloud button only makes sense signed in, and only on the ones
-                  // that are not already on the account
-                  isSignedIn && !isBackedUp(sp)
-                    ? () => onBackUpProgression(sp)
-                    : undefined,
+                  /* The cloud button only makes sense signed in, but it belongs on
+                     every device row then, including a restored copy. It used to be
+                     hidden on anything already on the account, which left a restored
+                     copy with no way back: the handler now knows not to upload a
+                     second time, so the button here just means 'this lives on the
+                     account only' either way. */
+                  isSignedIn ? () => handleBackUpRow(sp) : undefined,
                 ),
               )
             )}
@@ -277,7 +444,18 @@ export function ProgressionManager({
             {isSignedIn && (
               <>
                 <Text style={commonStyles.sectionTitle}>Saved To Your Account</Text>
-                {cloudError && <Text style={styles.errorText}>{cloudError}</Text>}
+                {/* Fetching the list gives up rather than waiting forever now, so
+                    this is a state the user can actually land on. Without a way to
+                    ask again it would be a dead end until they signed out and back
+                    in, so the message comes with a button rather than on its own. */}
+                {cloudError && (
+                  <View style={styles.syncBarError}>
+                    <Text style={styles.syncErrorText}>{cloudError}</Text>
+                    <Pressable onPress={onRefreshCloud} style={styles.retryButton}>
+                      <Text style={styles.retryText}>Retry</Text>
+                    </Pressable>
+                  </View>
+                )}
                 {isCloudLoading ? (
                   <ActivityIndicator color={COLORS.accent} style={{ paddingVertical: 20 }} />
                 ) : cloudProgressions.length === 0 ? (
@@ -287,7 +465,14 @@ export function ProgressionManager({
                   </Text>
                 ) : (
                   cloudProgressions.map(sp =>
-                    renderSavedRow(sp, handleLoadFromCloud, handleDeleteFromCloud, onRenameInCloud),
+                    renderSavedRow(
+                      sp,
+                      handleLoadFromCloud,
+                      handleDeleteFromCloud,
+                      onRenameInCloud,
+                      undefined,
+                      isOnDevice(sp) ? undefined : () => onRestoreFromCloud(sp),
+                    ),
                   )
                 )}
               </>
@@ -295,12 +480,17 @@ export function ProgressionManager({
 
             <View style={{ height: 24 }} />
           </ScrollView>
-        </Pressable>
-      </Pressable>
+        </View>
+      </View>
       </KeyboardAvoidingView>
     </Modal>
   );
 }
+
+/* A sheet inside a Modal still gets rebuilt every time anything in the app changes,
+   even while it is closed: it works out a fingerprint for every progression in both lists to decide which buttons each row should have. 
+   so it is skipped entirely unless something it actually shows has changed. */
+export const ProgressionManager = memo(ProgressionManagerComponent);
 
 // Styles only this sheet uses, the shared modal pieces come from commonStyles
 const styles = StyleSheet.create({
@@ -335,12 +525,85 @@ const styles = StyleSheet.create({
     color: COLORS.accentLight,
     fontSize: 15,
   },
+  // The device button on a cloud progression that has no copy here yet, (the reverse of the cloud button above)
+  restoreButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: COLORS.accentDim,
+    borderWidth: 1,
+    borderColor: 'rgba(108, 99, 255, 0.25)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  restoreIcon: {
+    fontSize: 14,
+  },
   errorText: {
     color: COLORS.danger,
     fontSize: 13,
     lineHeight: 18,
     paddingHorizontal: 4,
     paddingBottom: 8,
+  },
+
+  /* The strip above the device list saying what the backup is doing: */
+  syncBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: COLORS.accentDim,
+    borderWidth: 1,
+    borderColor: 'rgba(108, 99, 255, 0.25)',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 8,
+  },
+  syncText: {
+    color: COLORS.accentLight,
+    fontSize: 12,
+    fontWeight: '600',
+    flex: 1,
+  },
+  syncBarError: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: COLORS.partialBg,
+    borderWidth: 1,
+    borderColor: COLORS.partialBorder,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 8,
+  },
+  syncErrorText: {
+    color: COLORS.partial,
+    fontSize: 12,
+    fontWeight: '600',
+    flex: 1,
+    lineHeight: 17,
+  },
+  retryButton: {
+    backgroundColor: COLORS.partialBg,
+    borderWidth: 1,
+    borderColor: COLORS.partialBorder,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  retryText: {
+    color: COLORS.partial,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  // The little line on a device row that has not made it to the account yet
+  pendingNote: {
+    color: COLORS.textMuted,
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: 3,
   },
   currentSection: {
     paddingHorizontal: 4,
@@ -374,6 +637,11 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
     paddingHorizontal: 16,
   },
+  // Wraps one row plus its optional disclaimer underneath, so the two move as one
+  // block in the list rather than the spacing collapsing between them
+  savedRowWrapper: {
+    marginBottom: 6,
+  },
   savedRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -381,8 +649,36 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderRadius: 10,
-    marginBottom: 6,
     backgroundColor: COLORS.bgElevated,
+  },
+  savedRowWithNote: {
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+  },
+
+  /* The note joined onto the bottom of a device copy that was pulled down from the
+     cloud on purpose */
+  restoredNoteBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.bgElevated,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 10,
+  },
+  restoredNoteIcon: {
+    fontSize: 11,
+    marginRight: 6,
+  },
+  restoredNoteText: {
+    color: COLORS.partial,
+    fontSize: 11,
+    fontWeight: '600',
+    flex: 1,
   },
   savedInfo: {
     flex: 1,

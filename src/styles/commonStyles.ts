@@ -24,11 +24,31 @@ export const commonStyles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
+  headerTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
   headerTitle: {
     color: COLORS.textPrimary,
     fontSize: 20,
     fontWeight: '800',
     letterSpacing: -0.5,
+  },
+  headerSyncBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: COLORS.accentDim,
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  headerSyncText: {
+    color: COLORS.accentLight,
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
   headerActions: {
     flexDirection: 'row',

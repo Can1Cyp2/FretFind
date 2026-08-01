@@ -29,6 +29,14 @@ export function useProgression() {
   // True once stored data has been read, so the persist effects below do not run first and wipe the storage with the empty starting state
   const hasLoaded = useRef(false);
 
+  /* Mirrors of the two lists, refreshed on every render, for the couple of actions
+     below that need to read one list while updating the other (saving reads the
+     strip, loading reads the saved list). */
+  const progressionRef = useRef(progression);
+  progressionRef.current = progression;
+  const savedRef = useRef(savedProgressions);
+  savedRef.current = savedProgressions;
+
   // Load both from device storage once when the app starts:
   useEffect(() => {
     (async () => {
@@ -101,18 +109,15 @@ export function useProgression() {
 
   // Keep the current progression under a name, so the user can start a new one without losing this one
   const saveProgression = useCallback((name: string) => {
-    setProgression(current => {
-      if (current.length > 0) {
-        const saved: SavedProgression = {
-          id: generateId(),
-          name: name.trim() || 'Untitled Progression',
-          chords: [...current],
-          createdAt: Date.now(),
-        };
-        setSavedProgressions(prev => [...prev, saved]);
-      }
-      return current;
-    });
+    const current = progressionRef.current;
+    if (current.length === 0) return;
+    const saved: SavedProgression = {
+      id: generateId(),
+      name: name.trim() || 'Untitled Progression',
+      chords: [...current],
+      createdAt: Date.now(),
+    };
+    setSavedProgressions(prev => [...prev, saved]);
   }, []);
 
   // Put a set of chords straight into the strip, replacing what is there. Used when
@@ -124,19 +129,43 @@ export function useProgression() {
 
   // Load a saved progression back into the strip (replacing what is there):
   const loadProgression = useCallback((id: string) => {
-    setSavedProgressions(saved => {
-      const found = saved.find(p => p.id === id);
-      if (found) setProgression([...found.chords]);
-      return saved;
-    });
+    const found = savedRef.current.find(p => p.id === id);
+    if (found) setProgression([...found.chords]);
   }, []);
 
   const deleteSavedProgression = useCallback((id: string) => {
     setSavedProgressions(prev => prev.filter(p => p.id !== id));
   }, []);
 
+  /* Removes several at once in a single update. The automatic backup can find a
+     whole batch of progressions that no longer need a device copy, and calling the
+     single version once per progression meant one state update and one write to
+     device storage each, which is what made the sheet stutter when it opened. */
+  const deleteSavedProgressions = useCallback((ids: string[]) => {
+    if (ids.length === 0) return;
+    const removing = new Set(ids);
+    setSavedProgressions(prev => prev.filter(p => !removing.has(p.id)));
+  }, []);
+
   const renameSavedProgression = useCallback((id: string, name: string) => {
     setSavedProgressions(prev => prev.map(p => (p.id === id ? { ...p, name } : p)));
+  }, []);
+
+  /* Copies a cloud progression onto this device as its own local entry, marked so auto backup leaves it. 
+    Without that mark, the next auto backup pass would see a new device progression that is not on the account yet (it has a fresh
+     device id) and upload it, which would just be re-uploading a copy of one */
+  const restoreProgressionsFromCloud = useCallback((cloudProgressions: SavedProgression[]) => {
+    if (cloudProgressions.length === 0) return;
+    setSavedProgressions(prev => [
+      ...prev,
+      ...cloudProgressions.map(cp => ({
+        id: generateId(),
+        name: cp.name,
+        chords: cp.chords.map(c => ({ ...c })),
+        createdAt: Date.now(),
+        restoredFromCloud: true,
+      })),
+    ]);
   }, []);
 
   return {
@@ -150,7 +179,9 @@ export function useProgression() {
     saveProgression,
     loadProgression,
     deleteSavedProgression,
+    deleteSavedProgressions,
     renameSavedProgression,
+    restoreProgressionsFromCloud,
     isFull: progression.length >= MAX_PROGRESSION_LENGTH,
   };
 }

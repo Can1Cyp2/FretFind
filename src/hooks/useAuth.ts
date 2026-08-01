@@ -8,7 +8,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { supabase, isBackendConfigured, describeError } from '../services/supabase';
+import { supabase, isBackendConfigured, describeError, withTimeout } from '../services/supabase';
 
 // Where the confirmation email sends people after they tap the link:
 const CONFIRM_URL = 'https://can1cyp2.github.io/FretFind-Info_Site/confirm';
@@ -40,28 +40,46 @@ export function useAuth() {
 
   /* The three actions below all return an error message string when something goes
      wrong, or null when it worked. That way the screen calling them can show the
-     problem next to the form instead of each one inventing its own way to fail: */
+     problem next to the form instead of each one inventing its own way to fail.
+
+     They all go through the same timeout the saved progressions use. Each of these
+     is something the user is sat waiting on with a spinner in front of them, and
+     signing out waits before it closes the sheet, so a request that never comes
+     back leaves the screen looking stuck rather than simply slow. */
   const signUp = useCallback(async (email: string, password: string): Promise<string | null> => {
     if (!supabase) return 'Accounts are not available in this build.';
-    const { error } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-      options: { emailRedirectTo: CONFIRM_URL },
-    });
-    return error ? describeError(error) : null;
+    try {
+      const { error } = await withTimeout(
+        supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: { emailRedirectTo: CONFIRM_URL },
+        }),
+      );
+      return error ? describeError(error) : null;
+    } catch (e) {
+      return describeError(e);
+    }
   }, []);
   const signIn = useCallback(async (email: string, password: string): Promise<string | null> => {
     if (!supabase) return 'Accounts are not available in this build.';
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    });
-    return error ? describeError(error) : null;
+    try {
+      const { error } = await withTimeout(
+        supabase.auth.signInWithPassword({ email: email.trim(), password }),
+      );
+      return error ? describeError(error) : null;
+    } catch (e) {
+      return describeError(e);
+    }
   }, []);
   const signOut = useCallback(async (): Promise<string | null> => {
     if (!supabase) return null;
-    const { error } = await supabase.auth.signOut();
-    return error ? describeError(error) : null;
+    try {
+      const { error } = await withTimeout(supabase.auth.signOut());
+      return error ? describeError(error) : null;
+    } catch (e) {
+      return describeError(e);
+    }
   }, []);
 
   
