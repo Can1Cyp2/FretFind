@@ -178,7 +178,8 @@ Carried over from d6, planned for later in this deliverable:
 - [X] Add the theory explanations to 'Chords That Fit'.
 - [ ] Add the in-app walkthrough of the app's features to the Settings screen.
 - [X] Add small tweaks and polish to the UI, such as fixing issues, giving feedback to the user on button presses, and making the app feel more finished.
-- [ ] Fix cloud progressions from duplicate saves (which is a d6 leftover issue)
+- [X] Fix cloud progressions from duplicate saves (which is a d6 leftover issue)
+- [X] Fix cloud progressions page freezing
 
 - [X] Sent app to both Google Play Store and Apple App Store for review, with the features up to d6.
 - [X] Made app screenshots for both Google Play Store and Apple App Store.
