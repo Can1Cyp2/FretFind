@@ -31,7 +31,14 @@ interface Props {
   visible: boolean;
   onClose: () => void;
   preferFlats?: boolean;
-  onAddToProgression?: () => void; // adds this chord to the progression (hidden when the progression is full)
+  /* Adds this chord to the progression (hidden when the progression is full).
+
+     It is handed the shape currently showing in the Shapes section. Whether that
+     gets used is up to the caller, and the two callers deliberately differ: a
+     suggested chord was never played, so the shape being looked at is the only one
+     there is to save, while a chord tapped in the results was played by the user on
+     the fretboard and has to keep that exact shape rather than a generated one. */
+  onAddToProgression?: (shownVoicing?: ChordVoicing | null) => void;
   isSuggestion?: boolean; // true when showing a suggested chord from the key view rather than a live match, which hides the match grade since nothing was tapped
   tuning?: Tuning;        // the tuning the shapes are worked out for, the Shapes section is left out without it
   onLoadVoicing?: (voicing: ChordVoicing) => void; // puts a chosen shape onto the main fretboard
@@ -71,6 +78,15 @@ export function ChordDetailModal({
   // The explanation popup that is currently open (null when none is)
   const [tooltipInfo, setTooltipInfo] = useState<{ title: string; text: string } | null>(null);
 
+  /* Which shape the Shapes section is showing. Kept in a ref rather than state
+     because nothing on this screen needs to redraw when it changes, it is only read
+     at the moment the 'Add button is pressed, and holding it as state would redraw
+     the whole breakdown on every swipe of the shape pager for no reason. */
+  const shownVoicing = useRef<ChordVoicing | null>(null);
+  const handleVoicingChange = useCallback((voicing: ChordVoicing | null) => {
+    shownVoicing.current = voicing;
+  }, []);
+
   /* Whether the Add to Progression button is showing its green look, which confirms the chord was added.
      the same idea as the + button on a result card: the confirmation is on the button 
 
@@ -90,7 +106,7 @@ export function ChordDetailModal({
 
   const handleAddPress = useCallback(() => {
     if (!onAddToProgression) return;
-    onAddToProgression();
+    onAddToProgression(shownVoicing.current);
     setJustAdded(true);
     if (flashTimeout.current) clearTimeout(flashTimeout.current);
     flashTimeout.current = setTimeout(() => setJustAdded(false), ADDED_FLASH_MS);
@@ -149,6 +165,7 @@ export function ChordDetailModal({
                   chordType={match.chordType}
                   tuning={tuning}
                   onLoadVoicing={onLoadVoicing}
+                  onVoicingChange={handleVoicingChange}
                 />
               </>
             )}
