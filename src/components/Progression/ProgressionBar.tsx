@@ -4,7 +4,7 @@ It shows the chords the user has collected as a horizontal row of pills with a c
 Clear button, and hides itself completely while the progression is empty so it
 takes no space until it is actually being used. The pills scroll sideways when there are more than fit on screen. */
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Alert, View, Text, ScrollView, Pressable } from 'react-native';
 import { ProgressionChord } from '../../types';
 import { ProgressionChordPill } from './ProgressionChordPill';
@@ -21,7 +21,7 @@ interface Props {
   onShowFitChords: () => void;          // opens the 'chords that fit' view
 }
 
-export function ProgressionBar({
+function ProgressionBarComponent({
   progression,
   maxLength,
   preferFlats,
@@ -81,3 +81,6 @@ export function ProgressionBar({
     </View>
   );
 }
+
+// The strip sits on screen the whole time, so it should only redraw when the progression changes
+export const ProgressionBar = memo(ProgressionBarComponent);

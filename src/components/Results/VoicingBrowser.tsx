@@ -30,9 +30,20 @@ interface Props {
   chordType: ChordType;
   tuning: Tuning;
   onLoadVoicing: (voicing: ChordVoicing) => void;
+  /* Tells the sheet above which shape is on screen right now. 
+     That sheet can add this chord to the progression, and for a suggested chord the shape being looked
+     at is the only shape there is to save, nothing was played on the fretboard for it. 
+     Without this it had no way of knowing which of the eight was showing, which is needed to add to the progression */
+  onVoicingChange?: (voicing: ChordVoicing | null) => void;
 }
 
-export function VoicingBrowser({ rootPitchClass, chordType, tuning, onLoadVoicing }: Props) {
+export function VoicingBrowser({
+  rootPitchClass,
+  chordType,
+  tuning,
+  onLoadVoicing,
+  onVoicingChange,
+}: Props) {
   // Working the shapes out takes a moment, so it only happens when the chord or the
   // tuning actually changes rather than on every render of the sheet
   const voicings = useMemo(
@@ -77,15 +88,22 @@ export function VoicingBrowser({ rootPitchClass, chordType, tuning, onLoadVoicin
     [pageWidth],
   );
 
-  if (voicings.length === 0) {
+  /* The shape on screen right now. Worked out before the empty case below bails
+     out, so the hook underneath it still runs every render the way hooks have to. */
+  const current = voicings.length > 0 ? voicings[Math.min(index, voicings.length - 1)] : null;
+
+  // Keep whoever is showing this section told which shape is being looked at
+  useEffect(() => {
+    onVoicingChange?.(current);
+  }, [current, onVoicingChange]);
+
+  if (voicings.length === 0 || !current) {
     return (
       <Text style={styles.emptyText}>
         No playable shape for this chord fits on the fretboard in this tuning.
       </Text>
     );
   }
-
-  const current = voicings[Math.min(index, voicings.length - 1)];
 
   return (
     <View>

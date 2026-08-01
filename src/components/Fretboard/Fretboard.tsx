@@ -3,7 +3,7 @@
    and the chord results always agree on what is selected). When a fret is tapped,
    the fretboard calls onFretPress and lets the app update the selection. */
 
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import { View, ScrollView } from 'react-native';
 import { FretRow } from './FretRow';
 import { FretNumber } from './FretNumber';
@@ -29,7 +29,7 @@ interface Props {
   onOpenTuning: () => void;              // the tuning fork button was tapped, which opens the tuning popup
 }
 
-export function Fretboard({
+function FretboardComponent({
   selections,
   tuning,
   showOctaves = false,
@@ -137,3 +137,4 @@ export function Fretboard({
     </View>
   );
 }
+export const Fretboard = memo(FretboardComponent);
