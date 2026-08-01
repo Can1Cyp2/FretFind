@@ -176,7 +176,7 @@ Carried over from d6, planned for later in this deliverable:
 - [X] Make the 'Chords That Fit' suggestions use the voicings, so a suggested chord can be loaded and strummed (closes issue 2 in `documents/d6-jul17-jul24/d6-issues.md`). (found in `src/components/Progression/FitChordsModal.tsx`)
 - [X] Add the extra edge cases for the added-tone and extended chords and confirm the whole run passes. (found in `src/tests/d7-edge-cases.ts`)
 - [X] Add the theory explanations to 'Chords That Fit'.
-- [ ] Add the in-app walkthrough of the app's features to the Settings screen.
+- [ ] Add the in-app walkthrough of the app's features to the Settings screen (started but I did not get it finished this deliverable)
 - [X] Add small tweaks and polish to the UI, such as fixing issues, giving feedback to the user on button presses, and making the app feel more finished.
 - [X] Fix cloud progressions from duplicate saves (which is a d6 leftover issue)
 - [X] Fix cloud progressions page freezing
