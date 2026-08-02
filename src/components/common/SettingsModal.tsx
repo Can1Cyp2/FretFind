@@ -22,6 +22,7 @@ interface Props {
   isSignedIn: boolean;
   accountEmail: string | null;
   onOpenAccount: () => void;     // opens the account sheet
+  onOpenWalkthrough: () => void; // opens the how to use the app walkthrough
 }
 
 export function SettingsModal({
@@ -37,11 +38,18 @@ export function SettingsModal({
   isSignedIn,
   accountEmail,
   onOpenAccount,
+  onOpenWalkthrough,
 }: Props) {
   // Close this sheet before opening the account one, so they do not stack up
   const openAccount = () => {
     onClose();
     onOpenAccount();
+  };
+
+  // Same reasoning as the account sheet: close this one first so only one sheet is ever open
+  const openWalkthrough = () => {
+    onClose();
+    onOpenWalkthrough();
   };
 
   return (
@@ -113,6 +121,25 @@ export function SettingsModal({
             </View>
             <VolumeSlider value={volume} onChange={onVolumeChange} />
           </View>
+
+          {/* Walkthrough: a quick tour of how the app actually works, aimed for someone
+              opening it for the first time. Uses the same 'opens another screen'
+              button style as Account below, since it does the same kind of thing */}
+          <Pressable
+            onPress={openWalkthrough}
+            style={({ pressed }) => [commonStyles.accountButton, pressed && { opacity: 0.85 }]}
+          >
+            <View style={commonStyles.accountAvatar}>
+              <Text style={commonStyles.accountAvatarText}>{'📖'}</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={commonStyles.accountButtonTitle}>How FretFind Works</Text>
+              <Text style={commonStyles.accountButtonSubtitle} numberOfLines={1}>
+                A quick walkthrough of the app and the progression builder
+              </Text>
+            </View>
+            <Text style={commonStyles.accountChevron}>{'›'}</Text>
+          </Pressable>
 
           {/* Account: optional, and only there for saving progressions to the cloud.
               Hidden entirely if the app was built without backend keys.
