@@ -78,11 +78,11 @@ documents/progress.md
 ## Checklist
 
 - [ ] Add the clear fretboard button, and confirm it fits on a narrow screen or move it between the tuning and strum buttons.
-- [ ] Finish the in-app walkthrough in the Settings screen, closing issue 6 from d6.
+- [X] Finish the in-app walkthrough in the Settings screen, closing issue 6 from d6.
 - [ ] Resolve the "Text strings must be rendered within a `<Text>` component" error, closing issue 3 from d6.
 - [ ] Implement and verify the 'Chords That Fit' explanations, test on various device.
 - [ ] Confirm all three test files still pass on the final build.
 - [ ] Write the final report.
 - [ ] Write the testing summary and Write the user and setup instructions (README).
-- [ ] Send the final build to both stores, with everything up to d8 in it.
+- [ ] Send the final build to both stores, with everything up to d8 in it. Including updating any store listing information that has changed since the original build.
 - [ ] Update the progress file with everything done this deliverable and a small outro for the course (different from the final report).

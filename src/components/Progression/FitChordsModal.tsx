@@ -254,6 +254,16 @@ function FitChordsModalComponent({
             <View style={{ height: 24 }} />
           </ScrollView>
         </View>
+
+        {/* Sits inside the full screen overlay rather than inside the sheet,e
+            sheet stays visible underneath while an explanation is being read. Inside
+            the sheet it would only be able to darken the sheet itself. */}
+        <InfoTooltip
+          visible={tooltipInfo !== null}
+          title={tooltipInfo?.title ?? ''}
+          text={tooltipInfo?.text ?? ''}
+          onClose={() => setTooltipInfo(null)}
+        />
       </View>
     </Modal>
 
