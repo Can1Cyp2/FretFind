@@ -2,7 +2,7 @@
   "expo": {
     "name": "FretFind",
     "slug": "FretFind",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/AppIcon.png",
     "userInterfaceStyle": "light",
@@ -15,7 +15,7 @@
     },
     "android": {
       "package": "com.can1cyp2.fretfind",
-      "versionCode": 2,
+      "versionCode": 3,
       "icon": "./assets/AppIcon.png",
       "adaptiveIcon": {
         "backgroundColor": "#111118",

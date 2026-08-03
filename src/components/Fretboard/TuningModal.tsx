@@ -28,6 +28,7 @@ import { COLORS } from '../../styles/colors';
 import { commonStyles } from '../../styles/commonStyles';
 import { pitchClassToName } from '../../engine/noteUtils';
 import { STANDARD_TUNING } from '../../constants/tunings';
+import { ModalSafeArea } from '../common/ModalSafeArea';
 
 interface Props {
   visible: boolean;
@@ -145,6 +146,7 @@ export function TuningModal({
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <ModalSafeArea>
       {/* Shifts the sheet up when the keyboard covers the name field the same fix
           already used in AccountModal for the same reason */}
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -156,6 +158,7 @@ export function TuningModal({
             <Pressable
               onPress={isCreating ? () => setIsCreating(false) : onClose}
               style={commonStyles.modalCloseButton}
+              hitSlop={8}
             >
               <Text style={commonStyles.modalCloseText}>{isCreating ? '‹' : '✕'}</Text>
             </Pressable>
@@ -298,6 +301,7 @@ export function TuningModal({
         </Pressable>
       </Pressable>
       </KeyboardAvoidingView>
+      </ModalSafeArea>
     </Modal>
   );
 }

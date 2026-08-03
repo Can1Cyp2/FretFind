@@ -26,6 +26,7 @@ import {
 } from 'react-native';
 import { COLORS } from '../../styles/colors';
 import { commonStyles } from '../../styles/commonStyles';
+import { ModalSafeArea } from './ModalSafeArea';
 
 interface Props {
   visible: boolean;
@@ -277,6 +278,7 @@ export function WalkthroughModal({ visible, onClose }: Props) {
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <ModalSafeArea>
       {/* The dark backdrop sits behind the sheet rather than wrapped around it, the
           same reasoning as the other list sheets: closing on an outside tap should
           never fight with scrolling the step text */}
@@ -286,7 +288,7 @@ export function WalkthroughModal({ visible, onClose }: Props) {
           <View style={commonStyles.modalHandle} />
           <View style={commonStyles.modalHeader}>
             <Text style={commonStyles.modalTitle}>How FretFind Works</Text>
-            <Pressable onPress={onClose} style={commonStyles.modalCloseButton}>
+            <Pressable onPress={onClose} style={commonStyles.modalCloseButton} hitSlop={8}>
               <Text style={commonStyles.modalCloseText}>{'✕'}</Text>
             </Pressable>
           </View>
@@ -352,6 +354,7 @@ export function WalkthroughModal({ visible, onClose }: Props) {
           </View>
         </View>
       </View>
+      </ModalSafeArea>
     </Modal>
   );
 }

@@ -18,6 +18,7 @@ import { TRIAD_INTERVALS } from '../../constants/scales';
 import { formatChordName, getNotesInChord } from '../../engine/chordNamer';
 import { ChordDetailModal } from '../Results/ChordDetailModal';
 import { InfoTooltip } from '../common/InfoTooltip';
+import { ModalSafeArea } from '../common/ModalSafeArea';
 import {
   KEYS_INFO,
   KEY_TYPE_INFO,
@@ -102,6 +103,7 @@ function FitChordsModalComponent({
   return (
     <>
     <Modal visible={showThisSheet} transparent animationType="slide" onRequestClose={onClose}>
+      <ModalSafeArea>
       {/* The dark backdrop is a layer behind the sheet rather than wrapped around it,
           so the list inside can scroll without the backdrop stealing the touch */}
       <View style={commonStyles.modalOverlay}>
@@ -110,7 +112,7 @@ function FitChordsModalComponent({
           <View style={commonStyles.modalHandle} />
           <View style={commonStyles.modalHeader}>
             <Text style={commonStyles.modalTitle}>Chords That Fit</Text>
-            <Pressable onPress={onClose} style={commonStyles.modalCloseButton}>
+            <Pressable onPress={onClose} style={commonStyles.modalCloseButton} hitSlop={8}>
               <Text style={commonStyles.modalCloseText}>{'✕'}</Text>
             </Pressable>
           </View>
@@ -265,6 +267,7 @@ function FitChordsModalComponent({
           onClose={() => setTooltipInfo(null)}
         />
       </View>
+      </ModalSafeArea>
     </Modal>
 
     {/* The theory breakdown for a tapped suggestion, the same view the results use.

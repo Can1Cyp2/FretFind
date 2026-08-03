@@ -8,6 +8,7 @@ import React from 'react';
 import { Modal, Pressable, Text, View } from 'react-native';
 import { commonStyles } from '../../styles/commonStyles';
 import { VolumeSlider } from './VolumeSlider';
+import { ModalSafeArea } from './ModalSafeArea';
 
 interface Props {
   visible: boolean;
@@ -54,7 +55,7 @@ export function SettingsModal({
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-
+      <ModalSafeArea>
       {/* Tapping the dark area outside the sheet closes it, taps inside the sheet stay */}
       <Pressable style={commonStyles.modalOverlay} onPress={onClose}>
         <Pressable
@@ -64,7 +65,7 @@ export function SettingsModal({
           <View style={commonStyles.modalHandle} />
           <View style={commonStyles.modalHeader}>
             <Text style={commonStyles.modalTitle}>Settings</Text>
-            <Pressable onPress={onClose} style={commonStyles.modalCloseButton}>
+            <Pressable onPress={onClose} style={commonStyles.modalCloseButton} hitSlop={8}>
               <Text style={commonStyles.modalCloseText}>{'✕'}</Text>
             </Pressable>
           </View>
@@ -174,6 +175,7 @@ export function SettingsModal({
           <View style={{ height: 24 }} />
         </Pressable>
       </Pressable>
+      </ModalSafeArea>
     </Modal>
   );
 }

@@ -16,6 +16,7 @@ import { resultStyles } from '../../styles/resultStyles';
 import { intervalToName, intervalToFullName, pitchClassToName } from '../../engine/noteUtils';
 import { formatChordName, getNotesInChord } from '../../engine/chordNamer';
 import { InfoTooltip } from '../common/InfoTooltip';
+import { ModalSafeArea } from '../common/ModalSafeArea';
 import { VoicingBrowser } from './VoicingBrowser';
 import {
   NOTES_INFO,
@@ -124,6 +125,7 @@ export function ChordDetailModal({
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <ModalSafeArea>
       {/* The dark backdrop is its own layer behind the sheet rather than a Pressable
           wrapped around it. Wrapping it meant the scrolling list underneath had two
           pressable ancestors competing with it for the touch, so a drag that started
@@ -136,7 +138,7 @@ export function ChordDetailModal({
           <View style={commonStyles.modalHandle} />
           <View style={commonStyles.modalHeader}>
             <Text style={[commonStyles.modalTitle, { fontSize: 28, fontWeight: '900' }]}>{displayName}</Text>
-            <Pressable onPress={onClose} style={commonStyles.modalCloseButton}>
+            <Pressable onPress={onClose} style={commonStyles.modalCloseButton} hitSlop={8}>
               <Text style={commonStyles.modalCloseText}>{'✕'}</Text>
             </Pressable>
           </View>
@@ -333,6 +335,7 @@ export function ChordDetailModal({
           onClose={() => setTooltipInfo(null)}
         />
       </View>
+      </ModalSafeArea>
     </Modal>
   );
 }
