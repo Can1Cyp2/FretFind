@@ -28,7 +28,14 @@ export const FLOATING_BUTTON_REACH = 52;
 
 const NATURAL_WIDTH = Math.min(SCREEN_WIDTH - FRET_NUMBER_COL_WIDTH, MAX_FRETBOARD_WIDTH);
 const NATURAL_MARGIN = (SCREEN_WIDTH - NATURAL_WIDTH - FRET_NUMBER_COL_WIDTH) / 2;
-const NEEDS_RESERVED_SPACE = NATURAL_MARGIN < FLOATING_BUTTON_REACH;
+
+/* True on a screen narrow enough that the right margin has to be reserved for the
+   tuning and strum buttons (FLOATING_BUTTON_REACH above). Exported because the
+   clear button on the left needs to know the same thing: reserving space on the
+   right is only ever done by adding marginRight with no matching marginLeft, which
+   centering then resolves by giving the whole natural margin to the left side and
+   none to the right */
+export const NEEDS_RESERVED_SPACE = NATURAL_MARGIN < FLOATING_BUTTON_REACH;
 
 export const FRETBOARD_CONTENT_WIDTH = NEEDS_RESERVED_SPACE
   ? Math.min(SCREEN_WIDTH - FRET_NUMBER_COL_WIDTH - FLOATING_BUTTON_REACH, MAX_FRETBOARD_WIDTH)

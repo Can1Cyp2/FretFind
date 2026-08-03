@@ -77,7 +77,11 @@ documents/progress.md
 
 ## Checklist
 
-- [ ] Add the clear fretboard button, and confirm it fits on a narrow screen or move it between the tuning and strum buttons.
+- [X] Add the clear fretboard button, and confirm it fits on a narrow screen or move it between the tuning and strum buttons.
+- [X] Small device fixes (based on feedback from testing): 
+  - [X] Fix the tuning button on small screens (issue 3 in d7).
+  - [X] Fix the strum button on small screens (issue 4 in d7)
+  - [X] Fix 'X' and similar text in buttons from not properly appearing on small screens
 - [X] Finish the in-app walkthrough in the Settings screen, closing issue 6 from d6.
 - [ ] Resolve the "Text strings must be rendered within a `<Text>` component" error, closing issue 3 from d6.
 - [ ] Implement and verify the 'Chords That Fit' explanations, test on various device.

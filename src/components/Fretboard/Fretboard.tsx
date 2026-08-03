@@ -10,6 +10,7 @@ import { FretNumber } from './FretNumber';
 import { StringLabels } from './StringLabels';
 import { StrumButton } from './StrumButton';
 import { TuningButton } from './TuningButton';
+import { ClearButton } from './ClearButton';
 import { playNote, playStrum, preloadNotes } from '../../audio/notePlayer';
 import {
   fretboardStyles,
@@ -27,6 +28,9 @@ interface Props {
   onFretPress: (stringIndex: StringIndex, fret: number) => void; // a fret was tapped
   onFillOpenNotes: () => void;           // the 'O' button at the nut was tapped, which fills in all open notes
   onOpenTuning: () => void;              // the tuning fork button was tapped, which opens the tuning popup
+  showClearButton: boolean;              // whether there is something to clear, or a clear to undo
+  clearButtonMode: 'clear' | 'undo';     // which of the two the button is currently offering
+  onClearFretboard: () => void;          // the clear/undo button was tapped
 }
 
 function FretboardComponent({
@@ -37,6 +41,9 @@ function FretboardComponent({
   onFretPress,
   onFillOpenNotes,
   onOpenTuning,
+  showClearButton,
+  clearButtonMode,
+  onClearFretboard,
 }: Props) {
   const openNotes = tuning.notes as PitchClass[];
 
@@ -90,10 +97,13 @@ function FretboardComponent({
     <View style={fretboardStyles.wrapper}>
       <View style={fretboardStyles.container}>
         {/* The strum button floats to the right bottom of the board while a chord is selected,
-            the tuning button floats to the right too but at the top near the tuning letters string labels
-            */}
+            the tuning button floats to the right too but at the top near the tuning letters string labels.
+            The clear button floats to the left (or, on a narrow screen, between the
+            other two on the right) whenever there is something to clear or a clear
+            to undo. */}
         <StrumButton visible={hasChord} onStrum={handleStrum} />
         <TuningButton onPress={onOpenTuning} />
+        <ClearButton visible={showClearButton} mode={clearButtonMode} onPress={onClearFretboard} />
 
         {/* Fixed top: string labels */}
         <View style={fretboardStyles.stringLabelsRowWrapper}>

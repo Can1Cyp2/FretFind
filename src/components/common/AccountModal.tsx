@@ -22,6 +22,7 @@ import {
 } from 'react-native';
 import { COLORS } from '../../styles/colors';
 import { commonStyles } from '../../styles/commonStyles';
+import { ModalSafeArea } from './ModalSafeArea';
 
 // Deleting an account is handled on the info site rather than in the app, since it
 // needs the email confirmation step and a proper explanation of what gets removed
@@ -182,6 +183,7 @@ export function AccountModal({
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={handleClose}>
+      <ModalSafeArea>
       {/* Shifts the sheet up when the keyboard covers the fields */}
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -192,7 +194,7 @@ export function AccountModal({
             <View style={commonStyles.modalHandle} />
             <View style={commonStyles.modalHeader}>
               <Text style={commonStyles.modalTitle}>Account</Text>
-              <Pressable onPress={handleClose} style={commonStyles.modalCloseButton}>
+              <Pressable onPress={handleClose} style={commonStyles.modalCloseButton} hitSlop={8}>
                 <Text style={commonStyles.modalCloseText}>{'✕'}</Text>
               </Pressable>
             </View>
@@ -340,6 +342,7 @@ export function AccountModal({
           </Pressable>
         </Pressable>
       </KeyboardAvoidingView>
+      </ModalSafeArea>
     </Modal>
   );
 }

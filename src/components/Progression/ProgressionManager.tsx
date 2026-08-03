@@ -25,6 +25,7 @@ import { commonStyles } from '../../styles/commonStyles';
 import { formatChordName } from '../../engine/chordNamer';
 import { backupKey } from '../../services/cloudProgressions';
 import { AutoBackupStatus } from '../../hooks/useAutoBackup';
+import { ModalSafeArea } from '../common/ModalSafeArea';
 
 interface Props {
   visible: boolean;
@@ -320,6 +321,7 @@ function ProgressionManagerComponent({
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <ModalSafeArea>
       {/* The avoiding view shifts the whole sheet up when the keyboard opens, so the
           name inputs near the bottom of the screen stay visible while typing.
           iOS and Android move their windows differently, so each gets its own behaviour */}
@@ -339,7 +341,7 @@ function ProgressionManagerComponent({
           <View style={commonStyles.modalHandle} />
           <View style={commonStyles.modalHeader}>
             <Text style={commonStyles.modalTitle}>Progressions</Text>
-            <Pressable onPress={onClose} style={commonStyles.modalCloseButton}>
+            <Pressable onPress={onClose} style={commonStyles.modalCloseButton} hitSlop={8}>
               <Text style={commonStyles.modalCloseText}>{'✕'}</Text>
             </Pressable>
           </View>
@@ -483,6 +485,7 @@ function ProgressionManagerComponent({
         </View>
       </View>
       </KeyboardAvoidingView>
+      </ModalSafeArea>
     </Modal>
   );
 }

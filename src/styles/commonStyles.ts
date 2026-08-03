@@ -142,18 +142,20 @@ export const commonStyles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: -0.5,
   },
+  /* 38x38 plus padding on every usage brings this to roughly 54x54 of actual tappable area, 
+   clearing Android's 48dp minimum touch target guideline for buttons and other controls, as per android docs (https://source.android.com/docs/setup/about) */
   modalCloseButton: {
     padding: 8,
     backgroundColor: COLORS.bgElevated,
-    borderRadius: 16,
-    width: 32,
-    height: 32,
+    borderRadius: 19,
+    width: 38,
+    height: 38,
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalCloseText: {
     color: COLORS.textSecondary,
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
   },
 
