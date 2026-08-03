@@ -1,5 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, SafeAreaView, StatusBar, Text, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, Pressable, StatusBar, Text, View } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Fretboard } from './src/components/Fretboard/Fretboard';
 import { TuningModal } from './src/components/Fretboard/TuningModal';
 import { setMasterVolume } from './src/audio/notePlayer';
@@ -30,6 +31,22 @@ export default function App() {
   const [selections, setSelections] = useState<(FretSelection | null)[]>(
     () => Array(NUM_STRINGS).fill(null),
   );
+
+  /* Whatever the fretboard held right before the last Clear tap, so that tap can be
+     undone. Not null only in the narrow window between a clear and whatever the
+     user does next, at which point it is thrown away, see the invalidation below. */
+  const [lastCleared, setLastCleared] = useState<(FretSelection | null)[] | null>(null);
+
+  /* Mirrors of the two above, read by handleClearFretboard below instead of
+     selections/lastCleared themselves, so that callback can keep one stable
+     identity across every render rather than a new one on every single tap. The
+     fretboard is memoized specifically so a tap only redraws the row it touched
+     rather than the whole board, and a prop that is a new function on every tap
+     would quietly defeat that the same way an unmemoized fretboard did before. */
+  const selectionsRef = useRef(selections);
+  selectionsRef.current = selections;
+  const lastClearedRef = useRef(lastCleared);
+  lastClearedRef.current = lastCleared;
 
   // The tuning the fretboard is currently using, the presets and any custom ones
   // the user has built, all remembered between launches by the hook. Switching
@@ -233,6 +250,9 @@ export default function App() {
     (id: string) => {
       selectTuning(id);
       setSelections(Array(NUM_STRINGS).fill(null));
+      // The frets that were cleared belonged to the old tuning, so restoring them
+      // under the new one would put back the wrong notes
+      setLastCleared(null);
     },
     [selectTuning],
   );
@@ -241,6 +261,7 @@ export default function App() {
     (name: string, notes: PitchClass[], octaves: number[]) => {
       addCustomTuning(name, notes, octaves);
       setSelections(Array(NUM_STRINGS).fill(null));
+      setLastCleared(null);
     },
     [addCustomTuning],
   );
@@ -249,6 +270,9 @@ export default function App() {
   // otherwise it selects the new fret (and works out the note it makes).
   const handleFretPress = useCallback(
     (stringIndex: StringIndex, fret: number) => {
+      // Any direct fretboard tap means there is no longer one specific 'previous
+      // chord' to undo back to, whether this tap adds a note or clears one string
+      setLastCleared(null);
       setSelections(prev => {
         const next = [...prev];
         const current = prev[stringIndex];
@@ -266,6 +290,7 @@ export default function App() {
 
   // Fill every empty string with its open note (the 'o' button at the nut)
   const handleFillOpenNotes = useCallback(() => {
+    setLastCleared(null);
     setSelections(prev =>
       prev.map((selection, stringIndex) => {
         if (selection) return selection;
@@ -275,6 +300,17 @@ export default function App() {
       }),
     );
   }, [currentTuning.notes]);
+
+  /* The clear fretboard button: */
+  const handleClearFretboard = useCallback(() => {
+    if (lastClearedRef.current) {
+      setSelections(lastClearedRef.current);
+      setLastCleared(null);
+    } else {
+      setLastCleared(selectionsRef.current);
+      setSelections(Array(NUM_STRINGS).fill(null));
+    }
+  }, []);
 
   // Adding a chord to the progression keeps the exact shape currently on the fretboard,
   // so the progression remembers how the chord was actually played. The confirmation
@@ -310,6 +346,7 @@ export default function App() {
      It replaces whatever is on the fretboard, the same as recalling a progression chord does,
      since the point is to see that one shape in place and be able to strum it */
   const handleLoadVoicing = useCallback((voicing: ChordVoicing) => {
+    setLastCleared(null);
     setSelections(voicing.selections.map(s => (s ? { ...s } : null)));
   }, []);
 
@@ -318,6 +355,7 @@ export default function App() {
   const handleRecallShape = useCallback((chord: ProgressionChord) => {
     // Chords added from the key suggestions have no saved shape, so there is nothing to recall:
     if (!chord.selections.some(Boolean)) return;
+    setLastCleared(null);
     setSelections(chord.selections.map(s => (s ? { ...s } : null)));
   }, []);
 
@@ -350,7 +388,16 @@ export default function App() {
 
   const activeCount = selections.filter(Boolean).length;
 
+  /* The clear button shows for either of two reasons: there is something on the
+     board worth clearing or the last thing that happened was clearing something
+     and need to display the undo button */
+  const showClearButton = activeCount > 0 || lastCleared !== null;
+  const clearButtonMode: 'clear' | 'undo' = lastCleared !== null ? 'undo' : 'clear';
+
+  /* SafeAreaProvider has to wrap the tree. Without this, Android in particular has nothing keeping content out 
+  from under the status bar and the gesture bar / back button area: React Native's own SafeAreaView only ever did anything on iOS */
   return (
+    <SafeAreaProvider>
     <SafeAreaView style={commonStyles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor={COLORS.bg} />
       <View style={commonStyles.header}>
@@ -407,6 +454,9 @@ export default function App() {
         onFretPress={handleFretPress}
         onFillOpenNotes={handleFillOpenNotes}
         onOpenTuning={openTuning}
+        showClearButton={showClearButton}
+        clearButtonMode={clearButtonMode}
+        onClearFretboard={handleClearFretboard}
       />
       {/* The progression strip (hides itself while the progression is empty) */}
       <ProgressionBar
@@ -507,5 +557,6 @@ export default function App() {
         onSignOut={auth.signOut}
       />
     </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
