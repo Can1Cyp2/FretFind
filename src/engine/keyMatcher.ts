@@ -9,10 +9,10 @@
    what they played. */
 
 import { ChordMatch, DiatonicChord, MusicKey, PitchClass, ProgressionChord, ScaleType, TriadQuality } from '../types';
-import { SCALE_INTERVALS, SCALE_DEGREE_QUALITIES, SCALE_DEGREE_NUMERALS } from '../constants/scales';
+import { SCALE_INTERVALS, SCALE_DEGREE_QUALITIES, SCALE_DEGREE_NUMERALS, TRIAD_INTERVALS } from '../constants/scales';
 import { CHORD_TYPES } from '../constants/chords';
 import { pitchClassToName } from './noteUtils';
-import { formatChordName, formatRootName } from './chordNamer';
+import { formatChordName, formatRootName, getNotesInChord } from './chordNamer';
 
 /* Boils a chord symbol down to the basic quality of its triad, since key fitting
    only cares whether the chord is major, minor, or diminished at heart:
@@ -87,6 +87,48 @@ export function getDiatonicChords(key: MusicKey, progression: ProgressionChord[]
     );
     return { numeral: numerals[degree], rootPitchClass, quality, symbol, inProgression };
   });
+}
+
+/* Explains one chord of a key using that keys actual notes, rather than in the generic text. 
+   The explanations say what a degree does in general (vii is tense, IV sounds like open air, and so on), which
+   is the half that transfers to every key. This is the other half: in the key the user is actually looking at, 
+   which chord is it, which notes is it made of, and why does it come out major, minor or diminished rather than something else.
+
+   The why is worth pointing out because it is the one part a beginner cannot see from the chord list. 
+   A major third on the bottom gives major, a minor third on the bottom gives minor, 
+   and two minor thirds stacked give diminished because that leaves the outer fifth a semitone short. 
+   Naming the real notes and the real semitone counts makes it easier to understand to someone who does not understand theory */
+export function explainDiatonicChord(
+  key: MusicKey,
+  chord: DiatonicChord,
+  preferFlats?: boolean,
+): string {
+  const name = formatChordName(chord.rootPitchClass, chord.symbol, undefined, preferFlats);
+  const notes = getNotesInChord(chord.rootPitchClass, TRIAD_INTERVALS[chord.quality], preferFlats);
+  const [root, third, fifth] = notes;
+
+  // The two stacked thirds, measured off the triad formula rather than hardcoded,
+  // so this cannot drift out of step with the intervals the rest of the app uses
+  const intervals = TRIAD_INTERVALS[chord.quality];
+  const lowerThird = intervals[1];
+  const upperThird = intervals[2] - intervals[1];
+  const outerFifth = intervals[2];
+  const thirdName = (semitones: number) => (semitones === 4 ? 'a major third' : 'a minor third');
+
+  // What the two third sizes add up to, which is the actual reason for the quality:
+  const why =
+    chord.quality === 'major'
+      ? `The major third at the bottom is what makes it major, and ${root} up to ${fifth} comes out at ${outerFifth} semitones, an ordinary perfect fifth.`
+      : chord.quality === 'minor'
+        ? `The minor third at the bottom is what makes it minor, and ${root} up to ${fifth} still comes out at ${outerFifth} semitones, an ordinary perfect fifth.`
+        : `Two minor thirds stacked leaves ${root} up to ${fifth} at only ${outerFifth} semitones instead of the usual 7, so the fifth is flattened, and that flattened fifth is what makes the chord diminished. It is also why this chord sounds unstable next to the others.`;
+
+  return (
+    `In ${key.name}, ${chord.numeral} is ${name}, made of ${notes.join(', ')}. ` +
+    `Those are every other note of the ${key.name} scale starting from ${root}, which is how every chord in a key is built. ` +
+    `${root} up to ${third} is ${lowerThird} semitones (${thirdName(lowerThird)}), and ${third} up to ${fifth} is ${upperThird} semitones (${thirdName(upperThird)}). ` +
+    why
+  );
 }
 
 // Turns a suggested chord into a full chord match, so the theory breakdown view can

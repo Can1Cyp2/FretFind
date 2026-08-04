@@ -84,8 +84,9 @@ documents/progress.md
   - [X] Fix 'X' and similar text in buttons from not properly appearing on small screens
 - [X] Finish the in-app walkthrough in the Settings screen, closing issue 6 from d6.
 - [ ] Resolve the "Text strings must be rendered within a `<Text>` component" error, closing issue 3 from d6.
-- [ ] Implement and verify the 'Chords That Fit' explanations, test on various device.
-- [ ] Confirm all three test files still pass on the final build.
+- [X] Implement and verify the 'Chords That Fit' explanations, test on various device.
+  - [X] Make the roman numeral explanations work out the actual chord for the key on screen, name its real notes, and explain why it comes out major, minor or diminished, instead of only describing the generic explanation, this helps new users understand more complicated concepts (extension of issue 5 from d6)
+- [X] Confirm all three test files still pass on the final build (not including the d1 basic test file 'basicControllers.mock.test')
 - [ ] Write the final report.
 - [ ] Write the testing summary and Write the user and setup instructions (README).
 - [ ] Send the final build to both stores, with everything up to d8 in it. Including updating any store listing information that has changed since the original build.
