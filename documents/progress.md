@@ -972,7 +972,7 @@ This deliverable was planned as a smaller one: alternate tunings as the main new
 The current screen has the following features for d7 (on top of d6):
 - A tuning fork button beside the fretboard opens a tuning popup: common tunings (Standard, Drop D, Half Step Down, Full Step Down, Drop C, Open G, Open D, Open E, DADGAD, etc.), plus a custom tuning builder that saves on the device and can rename and delete.
 - The chord info popup has a Shapes section: the different ways that chord can actually be played in the current tuning, paged through one at a time as a diagram, with a button that loads the chosen one onto the fretboard so it can be heard and strummed.
-- 'Chords That Fit' explains itself now instead of just listing roman numerals, so someone with no theory background can read why the chords in a key belong together.
+- 'Chords That Fit' says plainly that chords sharing a key tend to sound good together, and orders the keys by how well they match the progression, rather than opening straight onto an unexplained list. The fuller explanations (what the roman numerals actually mean, how major and minor tend to feel, and the progressions that keep recurring) were deferred to d8, as noted in the checklist below.
 - Cloud saved progressions no longer duplicate themselves and a progression lives in one place rather than two: once it is on the account it comes off the device list, with buttons to move it back either one at a time or all at once. (Eventually I want to add an icon and option to show if a progression that is in the cloud is downloaded for offline use, but that is future work not for the sake of this project)
 
 The in-app walkthrough in Settings is started but not finished, so it is not in the list above. It carries over to the next deliverable (d8).
@@ -1099,3 +1099,93 @@ Not finished this deliverable:
 - [ ] Track down the "Text strings must be rendered within a `<Text>` component" error (issue 3 in `documents/d6-jul17-jul24/d6-issues.md`), which is still being logged, but have not found the cause yet. It is not blocking anything, but I would like to fix it before the next store submission (final before projects due date)
 
 (Also, I would like to add more theory explanations to the Chords That Fit section, but what was done here is enough to close the checklist item for d7, so the rest more thorough explanations will be moved to d8, which is the last deliverable and has more time for polish and education features, as I had originally planned)
+
+---
+
+# Deliverable 8 (d8): Finishing, Deeper Theory, and Final Documentation
+
+Date range: July 31, 2026 - August 4, 2026
+
+The 8th and final deliverable, closing out the items left over from d7, one small piece of new UI and final documentation. 
+The plan is in `documents/d8-jul31-aug4/d8-August4th_plan.md`.
+
+## What This Deliverable Covers:
+
+This is the last deliverable, and it is shorted (only four days) because the course end date. There is no new features planned. The contracts original plan for d8 is still staying mostly as stated, final deliverable and the published app, so my time went to those things, plus finishing the few things still open, one small piece of UI I wanted in before the final build, and the final documentation.
+
+I deliberately did not start anything new here. Anything I still want to add that does not fit in this scope is written down in `documents/todo_future.md` instead, so that I could focus on polishing and finishing the app rather than starting new features which were not crucial to the final product.
+
+The current screen has the following features for d8 (on top of d7):
+- The app walkthrough: a step by step explanation of the apps features in the Settings screen, aimed at someone opening FretFind for the first time and separate from the theory explanations in the app. Carried over from d7, finished this deliverable.
+- A clear button for the fretboard, kept deliberately distinct from the progression strips 'Clear' button (different side of the screen, different icon and an undo option) because two buttons called "Clear" doing very different things on the same screen could be a very easy mistake to make.
+- Small device fixes, which came directly out of the closed test rather than out of my own testing. On smaller Android phones the interface was running underneath the status bar at the top and the gesture bar at the bottom, and the close buttons on the sheets were too small to reliably tap.
+- Deeper theory explanations in 'Chords That Fit': what a key is, what the roman numerals mean, how major and minor tend to feel and the chord progressions that keep recurring in real songs, each with the mood and the genres it belongs to. The numeral explanations also now work out the actual chord for the key on screen, name its real notes, and explain why it comes out major, minor or diminished, instead of only describing the degree in the abstract.
+
+## Current Scope: (d8)
+
+New files:
+```txt
+src/components/Fretboard/ClearButton.tsx
+  -> the floating clear button for the fretboard
+src/components/common/ModalSafeArea.tsx
+  -> wraps a Modal's content so it does not get overlapped by the devices safe area, since react native's own SafeAreaView is a no-op on Android
+```
+
+Changed files:
+```txt
+src/components/Fretboard/Fretboard.tsx     -> renders the clear button
+App.tsx                                    -> the clear/undo state, kept away from the progression state entirely
+src/styles/fretboardStyles.ts              -> the left side placement, and the narrow screen fallback
+src/components/common/WalkthroughModal.tsx -> finished, with swipe between panels
+src/components/Progression/FitChordsModal.tsx, src/engine/keyMatcher.ts -> the deeper theory explanations, the generated numeral explanations
+src/styles/commonStyles.ts and every modal's close button -> bigger touch targets
+README.md                                  -> rewritten with the testing summary and setup instructions
+
+documents/3.final_project_report.md        -> the final report (finishing in d9, in the coming days: 5th or 6th of August)
+```
+
+## The Clear Fretboard Button
+
+There was no way to clear the whole fretboard in one go. Clearing meant tapping every selected note off one at a time, which is tedious, and it is the thing a user wants most often after finishing with one chord and moving to the next.
+
+The one real risk was confusing it with the Clear button on the progression strip, which throws away the entire progression and asks for confirmation first. Those two doing very different things while sitting near each other on the same screen and being called the same thing would be a bad mistake to make. So it floats above the results panel, on the left of the fretboard, the opposite side from the strum button, and only shows when there is actually something selected to clear. Clearing does not need a confirmation, since a fretboard selection takes seconds to rebuild, but retapping the button right after a clear undoes it and restores the previous chord, in case the tap was a mistake.
+
+On narrow Android screens, the same margin problem from issue 3 in the d7 issues file applies in mirror image on the left side, so there the button moves to the right, in the gap between the tuning button and the strum button, instead of squeezing the board from both sides.
+
+## Small Device Fixes (from closed testing)
+
+Feedback from the closed testers, not something I had seen myself revealed two problems, both specific to smaller Android devices:
+
+1. **System bar overlap:** the header was sitting under the status bar (clock, wifi) at the top, and sheet buttons were sitting under the gesture bar and back button at the bottom. React Natives `SafeAreaView` is for the safe area on iOS, not on Android, which I did not realize while coding. So it only ever did anything on iOS. Fixed with `react-native-safe-area-context`, wrapped around the app root and, since a `Modal` renders into its own separate native root that the apps provider does not reach, wrapped around every sheet's content individually too (`ModalSafeArea.tsx`).
+2. **Touch targets too small:** the little 'X' close buttons on every sheet were 32x32 with no extra tappable area around them, under Androids own 48dp minimum guideline. Bumped to 38x38 with `hitSlop` added on top (which increases the touchable area).
+
+## Deeper 'Chords That Fit' Explanations
+
+The key, roman numeral, mood and common progression explanations that were deferred from d7 (see the note at the end of that deliverable) were added this deliverable: what a key actually is, why major and minor tend to feel the way they do and the genres each carries, what the roman numerals mean and why the case and the little circle mean what they do, and the progressions that keep recurring in real songs, spelled out as the real chords of whichever key is selected.
+
+On top of that, the numeral explanations now go one step further than planned: tapping a numeral works out the actual chord for the key on screen, names its real notes, and explains why it comes out major, minor or diminished from those notes, rather than only describing the degree in the abstract. For example, tapping vii° in C Major says it is Bdim, made of B, D, F, and works out that two minor thirds stacked leaves the fifth a semitone short, which is what makes it diminished. This ties the general explanation to the specific key someone is actually looking at, which is the part a beginner cannot see just from the roman numeral itself.
+
+## Testing
+
+No new test files this deliverable, all three suites from d4 and d7 (`test:chords`, `test:voicings`, `test:edge-cases`) still pass on the final build. The full testing summary, what each suite checks and what it does not cover, is now in `README.md` rather than repeated here, since that is where a user or a marker would look for it.
+
+## Final Documentation
+
+Wrote the final report (`documents/3.final_project_report.md`), covering the whole project from d1 to d8: the milestones, the algorithms and the reasoning behind them, the sources and what I actually took from each, the mistakes and how I adapted, and what I learned. It draws on this progress file and the per deliverable plan and issue files rather than being written from scratch.
+
+The README was also rewritten. It was still the d1 version, written entirely in future tense and out of date in several places (a `context/` folder that no longer exists, missing the backend and half the npm scripts). It now covers the app as it actually shipped, the testing summary, and how the code is organised.
+
+## Done By August 4, 2026 checklist (checkmarks indicate complete, X marks incomplete):
+
+- [X] Add the clear fretboard button, and confirm it fits on a narrow screen or move it between the tuning and strum buttons. (found in `src/components/Fretboard/ClearButton.tsx`)
+- [X] Small device fixes (based on feedback from testing):
+  - [X] Fix the status bar and gesture bar overlapping the app on small Android screens. (found in `src/components/common/ModalSafeArea.tsx`, `App.tsx`)
+  - [X] Fix 'X' and similar buttons being too small to properly tap on small screens. (found in `src/styles/commonStyles.ts`)
+- [X] Finish the in-app walkthrough in the Settings screen, closing issue 6 from d6. (found in `src/components/common/WalkthroughModal.tsx`)
+- [ ] Resolve the "Text strings must be rendered within a `<Text>` component" error, closing issue 3 from d6. Still open, still have not found the cause.
+- [X] Implement and verify the 'Chords That Fit' explanations, test on various device. (found in `src/components/Progression/FitChordsModal.tsx`, `src/engine/keyMatcher.ts`)
+- [X] Confirm all three test files still pass on the final build (not including the d1 basic test file 'basicControllers.mock.test').
+- [X] Write the final report. (found in `documents/3.final_project_report.md`)
+- [X] Write the testing summary and the user and setup instructions. (found in `README.md`)
+- [ ] Send the final build to both stores, with everything up to d8 in it. Currently sorting out the Android build (version code mismatch between `app.json` and the local Gradle project), 28 daily testers currently on day 6 of the 14 days Google requires before production access.
+- [X] Update the progress file with everything done this deliverable. (found in `documents/progress.md`)

@@ -15,7 +15,7 @@
     },
     "android": {
       "package": "com.can1cyp2.fretfind",
-      "versionCode": 3,
+      "versionCode": 4,
       "icon": "./assets/AppIcon.png",
       "adaptiveIcon": {
         "backgroundColor": "#111118",
