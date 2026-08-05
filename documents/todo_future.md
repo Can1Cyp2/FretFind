@@ -4,6 +4,17 @@ Things I would like FretFind to do that are not going to fit in this project tim
 
 Nothing here is required for the project to be finished. This is the list of issues I want to fix, features I will implement, and improvements I would work on after the current project is complete.
 
+## Education
+
+**Tappable glossary terms everywhere in the app:**
+The one on this list I most want to build. Any word a beginner might not know would be highlighted wherever it appears anywhere in the app, and tapping it would open a one sentence plain language explanation of that word. So "semitone" would say something like: the smallest step in Western music, one fret up or down on the guitar, and the same thing as saying half a step. Same for interval, root, inversion, voicing, diatonic, tonic, barre, and the rest of the words I use without thinking about it.
+
+The reason this matters more than it sounds: the app already explains theory in the chord breakdown and in 'Chords That Fit', but those explanations are themselves written in words a complete beginner may not know. So there is a floor underneath the teaching where the explanations quietly stop helping the exact person they were written for, and right now the only way past that floor is to go and look the word up somewhere else, which is what the app is supposed to save them from. A glossary that works everywhere would remove that floor instead of raising it slightly.
+
+Half of it already exists. The `InfoTooltip` popup used by the info dots is the right shape for the explanation itself, so the popup side is a solved problem. What is missing is a list of terms and their one line definitions, plus a text component that can find those terms inside ordinary sentences and make just those words tappable, which would need to be used in place of plain text almost everywhere in the app.
+
+I did not have the time to do it properly in this project timeline, and doing it badly would be worse than not doing it. The risk is not really the code, it is the design: highlight too many words and every screen turns into a mess of underlined text that is harder to read than what it replaced, which would work against the plain and uncluttered feel I have been aiming for. Getting that balance right needs testing with real beginners, and that is a bigger job than the implementation.
+
 ## Fretboard and navigation
 
 **Scroll the fretboard to the chord when a progression chord is tapped:**
