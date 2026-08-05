@@ -13,7 +13,7 @@ import { ChordMatch, ChordVoicing, ProgressionChord, Tuning } from '../../types'
 import { COLORS } from '../../styles/colors';
 import { commonStyles } from '../../styles/commonStyles';
 import { resultStyles } from '../../styles/resultStyles';
-import { rankKeys, getDiatonicChords, diatonicChordToMatch } from '../../engine/keyMatcher';
+import { rankKeys, getDiatonicChords, diatonicChordToMatch, explainDiatonicChord } from '../../engine/keyMatcher';
 import { TRIAD_INTERVALS } from '../../constants/scales';
 import { formatChordName, getNotesInChord } from '../../engine/chordNamer';
 import { ChordDetailModal } from '../Results/ChordDetailModal';
@@ -189,10 +189,14 @@ function FitChordsModalComponent({
                       questions someone has here are different, so they get their
                       own targets rather than sharing one. */}
                   <Pressable
+                    /* what this degree does in any key is listed out, naming the notes and why they matter for this scale */
                     onPress={() =>
                       setTooltipInfo({
-                        title: `${chord.numeral} in a ${selectedKey.type === 'major' ? 'major' : 'minor'} key`,
-                        text: DEGREE_EXPLANATIONS[selectedKey.type][degree],
+                        title: `${chord.numeral} in ${selectedKey.name}`,
+                        text:
+                          DEGREE_EXPLANATIONS[selectedKey.type][degree] +
+                          '\n\n' +
+                          explainDiatonicChord(selectedKey, chord, preferFlats),
                       })
                     }
                     style={styles.numeralBadge}
