@@ -1141,7 +1141,7 @@ src/components/Progression/FitChordsModal.tsx, src/engine/keyMatcher.ts -> the d
 src/styles/commonStyles.ts and every modal's close button -> bigger touch targets
 README.md                                  -> rewritten with the testing summary and setup instructions
 
-documents/3.final_project_report.md        -> the final report (finishing in d9, in the coming days: 5th or 6th of August)
+documents/final_project_report.md          -> the final report (finishing in d9, in the coming days: 5th or 6th of August)
 ```
 
 ## The Clear Fretboard Button
@@ -1171,7 +1171,7 @@ No new test files this deliverable, all three suites from d4 and d7 (`test:chord
 
 ## Final Documentation
 
-Wrote the final report (`documents/3.final_project_report.md`), covering the whole project from d1 to d8: the milestones, the algorithms and the reasoning behind them, the sources and what I actually took from each, the mistakes and how I adapted, and what I learned. It draws on this progress file and the per deliverable plan and issue files rather than being written from scratch.
+Wrote the final report (`documents/final_project_report.md`), covering the whole project from d1 to d8: the milestones, the algorithms and the reasoning behind them, the sources and what I actually took from each, the mistakes and how I adapted, and what I learned. It draws on this progress file and the per deliverable plan and issue files rather than being written from scratch.
 
 The README was also rewritten. It was still the d1 version, written entirely in future tense and out of date in several places (a `context/` folder that no longer exists, missing the backend and half the npm scripts). It now covers the app as it actually shipped, the testing summary, and how the code is organised.
 
@@ -1185,7 +1185,7 @@ The README was also rewritten. It was still the d1 version, written entirely in 
 - [ ] Resolve the "Text strings must be rendered within a `<Text>` component" error, closing issue 3 from d6. Still open, still have not found the cause.
 - [X] Implement and verify the 'Chords That Fit' explanations, test on various device. (found in `src/components/Progression/FitChordsModal.tsx`, `src/engine/keyMatcher.ts`)
 - [X] Confirm all three test files still pass on the final build (not including the d1 basic test file 'basicControllers.mock.test').
-- [X] Write the final report. (found in `documents/3.final_project_report.md`)
+- [X] Write the final report. (found in `documents/final_project_report.md`)
 - [X] Write the testing summary and the user and setup instructions. (found in `README.md`)
 - [ ] Send the final build to both stores, with everything up to d8 in it. Currently sorting out the Android build (version code mismatch between `app.json` and the local Gradle project), 28 daily testers currently on day 6 of the 14 days Google requires before production access.
 - [X] Update the progress file with everything done this deliverable. (found in `documents/progress.md`)

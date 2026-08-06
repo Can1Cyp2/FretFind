@@ -141,8 +141,8 @@ Data flows one way: The selected notes live in `App.tsx` and are passed down to 
 Everything in `documents/`:
 
 - `progress.md`: the running progress report, one section per deliverable (through d1 to d8).
-- `3.final_project_report.md`: the final report covering the whole project.
-- `1.early-mid_project-status-report.md` and `2.mid_project-status-report.md`: the two status reports.
+- `final_project_report.md`: the final report covering the whole project.
+- `early-mid_project-status-report.md` and `mid_project-status-report.md`: the two status reports.
 - `d1-may27-jun8/` through `d8-jul31-aug4/`: individual deliverable plan files, issue files and screenshots of major milestone progress.
 - `todo_future.md`: work deliberately left for after the project, because I ran out of time. It is a list of features that I would like to code in the future to keep the project going.
 
