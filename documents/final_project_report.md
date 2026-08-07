@@ -1,5 +1,10 @@
 # FretFind: Final Project Report
 
+<style>
+img { float: right; margin: 0 0 14px 22px; }
+h1, h2, h3, hr, table { clear: both; }
+</style>
+
 **Sebastian Landry, EECS4080**
 **May 27, 2026 to August 4, 2026**
 
@@ -13,13 +18,13 @@ The project represents notes and chords as sets of integers modulo twelve, follo
 
 Built with React Native and Expo across eight deliverables, the app also generates its own guitar-like audio on the device using Karplus-Strong plucked string synthesis, supports nine preset tunings plus custom tunings, and provides an optional cloud backed account for saving chord progressions.
 
-The chord matching and shape generation algorithms are verified by four automated test suites covering 31 chord types and thousands of generated fretboard shapes, and the interface has been refined through closed testing with 30 users. This report covers the project's design and algorithms, the sources that informed them, the mistakes made and lessons learned across development, and the work planned but not completed within the project timeline.
+The chord matching and shape generation algorithms are verified by four automated test suites covering 31 chord types and thousands of generated fretboard shapes, and the interface has been refined through closed testing with 30 users.
 
 ---
 
 ## 1. Introduction and Purpose
 
-FretFind is a React Native and Expo app for reverse guitar chord finding. Instead of searching for a chord name first, the user selects notes on a virtual fretboard and the app identifies the chord being played.
+<img src="d8-jul31-aug4/d8-img1_Fretboard.jpg" alt="The main screen" width="175" style="float: right; margin: 0 0 12px 20px;">
 
 Every common chord tool out there uses the same approach: it goes from a name to the notes, you look up "Cmaj7" and it shows you where to put your fingers. (Only one other app I found works in a similar way mine does, but it lacks obvious features like chord breakdowns, voicing generation, progressions and educational information. FretFind is designed to be a complete learning tool for someone who can play a few chords but does not know the theory behind them.)
 
@@ -38,17 +43,13 @@ All six were successfully implemented in the application. Fretboard navigation a
 
 The app is built in React Native on Expo SDK 54, written in TypeScript, with an optional (for users) Supabase backend for accounts and cloud saved progressions. It is mobile only, portrait view only, and works completely offline. The account is optional: nothing in the chord matching, the audio, the tunings or the progression builder touches the network.
 
-<img src="d8-jul31-aug4/d8-img1_Fretboard.jpg" alt="The main screen" width="280">
-
 ---
 
 # Contributions
 
-This project's contributions are the app itself and the code behind it: Section 2 covers what was built and when, across all eight deliverables, and Section 3 covers the technical design, the algorithms, and the reasoning behind them.
-
 ## 2. Milestones and What Was Built
 
-The project ran across eight deliverables in ten weeks. The reasoning behind the technical choices is in Section 3, and the things that went wrong are in Section 6 of this report.
+The project ran across eight deliverables in ten weeks.
 
 The deliverables summarized:
 
@@ -73,13 +74,9 @@ The main thing worth noticing about d1 was clear at the end of d8: that initial 
 
 The interactive board: six strings, frets 0 to 22, tap a fret to select it, tap again to clear, and an 'O' button at the nut that fills every empty string with its open note. Underneath it in the logic of the project: the data structures for pitch classes, string indexs, fret selections and tunings.
 
-I had planned to define intervals and chord formulas in d2 as well, and I moved them into d3 partway through. That was deliberate rather than running out of time: I realized the formula representation should be designed together with the matcher that takes its input, not guessed or undefined a week ahead. It was the first change to the schedule and I believe it was the right call.
-
 ### d3: Reverse chord matching
 
-The first major component of the app. The matcher takes a set of tapped notes and returns a ranked list of named chords, instantly in real time as you tap. (Section 3.2 covers how)
-
-The other thing that happened here was a fix rather than a feature. The selected notes originally lived inside the `Fretboard` component, which meant the new results panel could not see them. I moved that state up into `App.tsx` so both read from one place, in the core of the app. That is the reason the board and the results can never disagree about what is selected and it is the pattern the whole app used since. This was a good learning opportunity: I had to understand React state and props well enough to know when to move the state up to the App.
+The first major component of the app. The matcher takes a set of tapped notes and returns a ranked list of named chords, instantly in real time as you tap.
 
 The early-mid project status report was written at the end of this deliverable.
 
@@ -87,22 +84,15 @@ The early-mid project status report was written at the end of this deliverable.
 
 Up to this point I had verified the matcher by hand: I checked C major, Cmaj7, C7, Am and the C/E inversion through manual testing by myself. Which is not the thorough testing that I wanted, d4 replaced teh manual testing with a real test that runs from the console and prints what it checked. Input was given, and the chords were properly identified, including inversions and slash chords. The test file is `src/tests/d4-chord-matcher-tests.ts` and it runs with `npm run test:chords`.
 
-Alongside that I implemented: octave labels (E2 rather than just E), a sharp or flat spelling preference, an adjustable results panel, and setup the App Store and Google Play profiles.
-
 The ordering here mattered more in the end than it seemed at the time. The tests were implemented before d5 tripled the size of the chord table, which is why that expansion was a low risk implementation, since I had verified the existing matcher worked flawlessly before adding the more complicated chord shapes.
 
 ### d5: Expanded chords and the theory display
 
+<img src="d8-jul31-aug4/d8-img3_Chord-Info.jpg" alt="The chord breakdown" width="175" style="float: right; margin: 0 0 12px 20px;">
+
 The chord table went from just the commond chords, triads and sevenths, to 31 chord types, adding the added tone chords (example: Cadd9) and the common extended chords (example: Cmaj9). Because the matcher reads formulas from a table rather than having them written into its logic, this was simply researching what makes each chord unique and then adding rows.
 
-Two important things came out of it:
-
-- First, I split the old partial match grade in two ('Weak' matches, and 'Partial' matches): partial now means every essential note is there, and weak means only about half of them are, shown in red so a weak guess is visibly different from a close one. The original single grade encapsulated too much information and was not too useful to the user, so I split it into two.
-- Second, writing the tests turned up a genuine theory problem: a bare root, 11th and b7 (a root, 11th note in scale, and flat 7th note in the scale) is the same set of notes as a 7sus4, because the 11th and the 4th are the same pitch class. Which really isnt a bug, the notes really are identical, so the fix was to require the 9th to be present before naming something an 11th, letting the simpler reading win.
-
-This deliverable also added the chord breakdown sheet: tap a result and get the match grade ('Perfect', 'Partial', or 'Weak'), the formula of notes in the chord and its importance to the chord (colur coded: 'essential' or 'non-essential'), every interval with its full name and the note it lands on, and the voicing when the lowest note is not the root. Every section heading has a small 'i' button opening a plain language explanation for the concept.
-
-<img src="d8-jul31-aug4/d8-img3_Chord-Info.jpg" alt="The chord breakdown" width="280">
+Writing the tests also turned up a genuine theory problem: a bare root, 11th and b7 (a root, 11th note in scale, and flat 7th note in the scale) is the same set of notes as a 7sus4, because the 11th and the 4th are the same pitch class. Which really isnt a bug, the notes really are identical, so the fix was to require the 9th to be present before naming something an 11th, letting the simpler reading win.
 
 The mid-project status report was written at the end of this deliverable.
 
@@ -110,45 +100,33 @@ The mid-project status report was written at the end of this deliverable.
 
 The largest deliverable by far, implementing three large features: audio, progressions, and the backend.
 
-The audio is a tone generator built from scratch, because React Native has no way to make a sound out of nothing. It generates a sine wave at the right frequency for each note, and then mixes them together for chords. (Section 3.5 covers it in detail, including the two rebuilds it went through)
+The audio is a tone generator built from scratch, because React Native has no way to make a sound out of nothing.
 
 The progression builder: a strip of chords the user collects, each remembering the exact fretboard shape it was played as, so tapping a chord's pill later puts that shape back on the board. Progressions can be named, saved on the device, reordered and reloaded.
 
+<img src="d8-jul31-aug4/d8-img4_Progression.jpg" alt="The progression strip" width="175" style="float: right; margin: 0 0 12px 20px;">
 
-<img src="d8-jul31-aug4/d8-img4_Progression.jpg" alt="The progression strip" width="280">
-
-'Chords That Fit' (key feature): the app works out which key the progression most likely lives in and shows the other chords built from that key, so someone stuck for the next chord has a list worth trying. (Section 3.3 covers the logic behind it, and Section 3.4 covers the voicing generator that makes the shapes for those chords)
+'Chords That Fit' (key feature): the app works out which key the progression most likely lives in and shows the other chords built from that key, so someone stuck for the next chord has a list worth trying.
 
 The backend: Supabase accounts and cloud saved progressions, plus the FretFind info site (privacy policy, terms, account confirmation, password reset) deployed separately to GitHub Pages.
 
 ### d7: Tunings, voicings, and cloud fixes
 
+<img src="d8-jul31-aug4/d8-img2_Tuning.jpg" alt="The tuning picker" width="175" style="float: right; margin: 0 0 12px 20px;">
+
 The `Tuning` type had been designed originally in d2, so the app could hold more than one tuning, but the fretboard was hardcoded to standard tuning since the start. in d7 I made it switchable: nine common tunings (Standard, Drop D, Half Step Down, Full Step Down, Drop C, Open G, Open D, Open E, DADGAD) plus a custom builder that saves user tunings on the device.
 
-<img src="d8-jul31-aug4/d8-img2_Tuning.jpg" alt="The tuning picker" width="280">
-
-Then, making tuning switchable is what allowed the next feature to be built properly. Up to then the app only ever knew one shape per chord type (in theory, since it was written to be adaptive), whatever the user tapped. I wanted to show the other ways to play the same chord and the obvious approach I found that would be most helpful for guitarists was to generate the shapes dynamically based on the current tuning. A table of fret numbers per chord type per root, would have been hundreds of rows that all became wrong the moment the tuning changed. So the shapes are generated from whatever tuning is currently loaded. (Section 3.4 covers the voicing generator in detail, including the rebuilds it had)
-
-This also closed an issue I had deliberately left open in d6, where I delayed to hardcode a single fixed shape for the 'Chords That Fit' suggestions because I knew the voicing feature was coming and did not want to build something I would have to revamp or throw away.
-
-The rest of d7 was spent on the cloud saved progressions. Once it was was implemented, three separate problems appeared which are covered in Section 6 of this document
+Then, making tuning switchable is what allowed the next feature to be built properly. Up to then the app only ever knew one shape per chord type (in theory, since it was written to be adaptive), whatever the user tapped. I wanted to show the other ways to play the same chord and the obvious approach I found that would be most helpful for guitarists was to generate the shapes dynamically based on the current tuning.
 
 ### d8: Finishing
 
-The app walkthrough: a step by stepexplanation of the apps features in the Settings screen, aimed at someone opening FretFind for the first time and separate from the theory explanations in the app.
+<img src="d8-jul31-aug4/d8-img9-Walkthrough.jpg" alt="The walkthrough (panel 1 of 8)" width="175" style="float: right; margin: 0 0 12px 20px;">
 
-<img src="d8-jul31-aug4/d8-img9-Walkthrough.jpg" alt="The walkthrough (panel 1 of 8)" width="280">
+The app walkthrough: a step by stepexplanation of the apps features in the Settings screen, aimed at someone opening FretFind for the first time and separate from the theory explanations in the app.
 
 A clear button for the fretboard, kept deliberately distinct from the progression strips 'Clear' button (different side of the screen, different icon and an undo option) because two buttons called "Clear" doing very different things on the same screen could be a very easy mistake to make.
 
-Small device fixes, which came directly out of the closed test rather than out of my own testing. On smaller Android phones the interface was running underneath the status bar at the top and the gesture bar at the bottom, and the close buttons on the sheets were too small to reliably tap. (Both are covered in detail in Section 6)
-
-Deeper theory explanations in 'Chords That Fit': what a key is, what the roman numerals mean, how major and minor tend to feel and the chord progressions that keep recurring in real songs, each with the mood and the genres it belongs to. (Section 3.3 covers what the theory such as the numerals say)
-
-<img src="d8-jul31-aug4/d8-img5-Chords-That-Fit.jpg" alt="Chords That Fit" width="280">
-
-<img src="d8-jul31-aug4/d8-img6-Progressions-That-Work.jpg" alt="Progressions that work in the selected key" width="280">
-
+Deeper theory explanations in 'Chords That Fit': what a key is, what the roman numerals mean, how major and minor tend to feel and the chord progressions that keep recurring in real songs, each with the mood and the genres it belongs to.
 
 ### Overall: The app and its features
 
@@ -162,7 +140,7 @@ Deeper theory explanations in 'Chords That Fit': what a key is, what the roman n
 - Optional accounts with cloud saved progressions, and the ability to move a progression between the device and the account in either direction
 - Display options for note spelling and octave labels, an audio volume control, and an in-app walkthrough
 
-<img src="d8-jul31-aug4/d8-img8-Options.jpg" alt="The options sheet" width="280">
+<img src="d8-jul31-aug4/d8-img8-Options.jpg" alt="The options sheet" width="175" style="float: right; margin: 0 0 12px 20px;">
 
 ---
 
@@ -186,8 +164,6 @@ The alternative would have been to work with note names as strings. Every operat
 (Located in `src/engine/chordMatcher.ts`)
 
 The main problem I needed to solve when making the app: when between two and six notes are selected by the user, find out which chords those notes could represent and rank them.
-
-Normally you pick a chord name first and then look up the notes. This app works the other way around: you pick the notes and it works out the chord. That is the reverse part, and thus the main technical idea of the project.
 
 The matching works in these steps:
 
@@ -217,6 +193,10 @@ The same approach as the chord matcher, one level up, from chords to keys.
 
 The app does not ask the user what key they are in, since the average guitar player would not know unless told, or unless they were trained on theory. Instead it reuses the same brute force idea as the reverse chord matcher itself: try every possibility and score how well it explains what is already there, then the best score wins.
 
+<img src="d8-jul31-aug4/d8-img5-Chords-That-Fit.jpg" alt="Chords That Fit" width="175" style="float: right; margin: 20px 0 12px 20px;">
+
+<img src="d8-jul31-aug4/d8-img6-Progressions-That-Work.jpg" alt="Progressions that work in the selected key" width="175" style="float: right; margin: 0 0 12px 20px;">
+
 1. **Define what a key actually is, as data:** A key is just a starting note (the tonic) plus a pattern of gaps: major is `[0, 2, 4, 5, 7, 9, 11]` semitones up from the tonic, natural minor is `[0, 2, 3, 5, 7, 8, 10]`. Stacking every third note of that pattern gives the seven chords the key is built from (in major: major, minor, minor, major, major, minor, diminished, the familiar I ii iii IV V vi vii° pattern), stored as lookup tables in `src/constants/scales.ts` rather than written out by hand for all 24 keys.
 2. **Try every key against the progression:** There are only 24 real candidates (12 tonic notes, major or minor), so a simple loop checks all of them. For each chord already in the progression, the code checks whether that chord's root note even belongs to the candidate key's scale, and whether the chord's actual quality (major, minor, or diminished, worked out from its symbol) matches the quality that key would naturally put on that scale degree. (Almost instant)
 3. **Score and rank:** A chord that matches a key exactly (right root and right quality) scores higher than one that only shares a root note with it. The scores are added up per key, the keys are sorted best first, and the top one becomes the default, the same 'best match rises to the top' approach the chord matcher already uses.
@@ -230,7 +210,7 @@ Tapping vii° in C Major gives:
 
 - In C Major, vii° is Bdim, made of B, D, F. Those are every other note of the C Major scale starting from B, which is how every chord in a key is built. B up to D is 3 semitones (a minor third), and D up to F is 3 semitones (a minor third). Two minor thirds stacked leaves B up to F at only 6 semitones instead of the usual 7, so the fifth is flattened, and that flattened fifth is what makes the chord diminished.
 
-<img src="d8-jul31-aug4/d8-img7-Numeral-Explanation.jpg" alt="The generated numeral explanation" width="200">
+<img src="d8-jul31-aug4/d8-img7-Numeral-Explanation.jpg" alt="The generated numeral explanation" width="200" style="float: right; margin: 0 0 12px 20px;">
 
 The point is that the chord quality is not a rule someone invented that has to be memorized. It falls out of the scale itself. The generated text works out those interval sizes from the same table the rest of the app uses, so it can never disagree with the code, and teaches the user in a plain language way with a real example.
 
@@ -254,7 +234,7 @@ Hardcoding shapes would mean a table of six fret numbers for every chord type at
 
 The pruning in steps 1, 2, 4 and 5 is what makes this possible at all. Left unconstrained, each of six strings could be muted or set to any of its 23 positions, which is 24 to the power of 6, about 191 million combinations. Cutting the candidate frets down to chord notes only, then to one hand position at a time, brings a typical chord down to about 4,500 candidate shapes, and discarding anything musically or physically invalid leaves roughly 400 real ones.
 
-On optional notes, since this is what makes the difference between a shape that is playable and one that is not: a shape only ever has to contain the chords essential notes, never all of them. That is what the essential intervals in the chord table have meant since d3, and it matters more here than anywhere else in the app, as of course it is nice for the user to know if a note is essential or not, but it is crucial to making a chord playable or not. A major chord needs its root and its third but not its fifth, so dropping the fifth to get a shape a hand can actually hold is the right trade, and the scoring only mildly prefers the fuller sounding version. The aim is to find ways to play the chord, not to cram in every note it could theoretically contain.
+A shape only ever has to contain the chords essential notes, never all of them. That is what the essential intervals in the chord table have meant since d3, and it matters more here than anywhere else in the app, as of course it is nice for the user to know if a note is essential or not, but it is crucial to making a chord playable or not. A major chord needs its root and its third but not its fifth, so dropping the fifth to get a shape a hand can actually hold is the right trade, and the scoring only mildly prefers the fuller sounding version. The aim is to find ways to play the chord, not to cram in every note it could theoretically contain.
 
 This is the same brute force and score approach the chord matcher and the key matcher already use, which keeps it consistent with how the rest of the app thinks, and means it works for every chord type in the table without any per-chord special casing. It is almost instant on a modern phone, and the typescript tests confirm it is returning the right shapes for the chords I already know how to play.
 
@@ -283,8 +263,6 @@ This is the least obvious algorithm in the project, but made a large quality dif
 
 **Something I got right for the wrong reason:** When I halved the sample rate to 11025 Hz to fix the lag in d6, I wrote in my notes that it still covered the fretboard with room to spare, meaning it could handle the full range of notes (all 22 frets) without any issues and more if it had to. The real justification is in Nyquists theorem (Benson chapter 7.6): the highest frequency you can represent is exactly half the sample rate. The highest note the app can play is fret 22 on the high E string, about 1170 Hz, so even at 11025 Hz the limit is 5512 Hz, well above that note and several of its harmonics. That is why halving it did not audibly alter the sound in a negative way.
 
-I do wish I had the time to add real guitar sounds, a real audio sound for each note, but that is a much bigger project and I did not have the time to complete it in this timeline. The audio I ended up with is much closer to a real guitar sound than the simple sine wave I had before, and it is still a playable tone that is good enough for this app and for myself.
-
 ### 3.6 Techniques used across the whole app:
 
 **Keeping data separate from logic:** The chord types, scale degrees and tunings are all data tables that the code reads, so adding a chord type is adding a row rather than touching the matcher logic. I predicted in the mid-project report that this would make new chord types cheap and it held true: d5 tripled the chord table, d6 added the whole key layer on top of the same structure, and d7 generated shapes for any tuning. These were all a additions not rewrites, making the app more maintainable and extensible. My original planning and prediction helped me make the right decision early on and it paid off.
@@ -293,11 +271,7 @@ I do wish I had the time to add real guitar sounds, a real audio sound for each 
 
 **One place for the selected notes:** The tapped notes live in `App.tsx` and are passed down, so the fretboard and the results cannot disagree.
 
-**Not redrawing things that did not change:** The fretboard is 23 rows (22 frets) of wood grain, strings and shadows, so redrawing all of it on every tap was visibly slow and caused lag across the whole app. Skipping rows whose own notes did not change fixed slowness issues and I used the same idea to quicken the audio where each notes sound is generated once and reused, until the the memory gets close to full
-
 **Telling two saved progressions apart:** Whether a progression on the phone matches one on the account cannot be decided by an solely ID. The app identifies them by content: the name, plus every chords name and exact frets. Because the same name can be different notes in two tunings and the same frets can be different chords in two tunings, the only way to be sure is the check the whole progression, as I implemented.
-
-**Keeping the account optional:** Accounts and cloud saving were built separately from the core app, so that chord matching never depends on a network or a login. When the cloud code turned out to be buggy in d7, none of it could take the rest of the app down with it, which was exactly like I had planned, if the app was built with the backend being mandatory for users it would have been unusable until the cloud was fixed. In addition it would be less accessible to users who do not want to create an account, which is an unnecessary barrier to entry for a learning app.
 
 **A note on cost:** All three search problems above consist of: 
 1. 12 possible roots x 31 chord types = 372 comparisons for the matcher,
@@ -312,7 +286,7 @@ This was measured rather than assumed, which is what makes "trying everything" a
 
 ## 4. Related Work
 
-Section 1 already notes the one comparable app found during research, and that it lacks the chord breakdowns, voicing generation, progressions and educational information this project set out to provide. This section covers the other half of related work: the written and technical sources drawn on to build FretFind, and what specific idea came from each one.
+This section covers the other half of related work: the written and technical sources drawn on to build FretFind, and what specific idea came from each one.
 
 ### Music: A Mathematical Offering, Dave Benson
 
@@ -330,10 +304,9 @@ This book was most important source for the mathematical musical foundations of 
 - **Chapter 8.5, The Karplus-Strong algorithm (p.262 to 263)**, and 8.6, the filter analysis behind it. The technique in `toneGenerator.ts`. The original paper is Karplus and Strong, "Digital Synthesis of Plucked-String and Drum Timbres", Computer Music Journal 7(2), 1983, pages 43 to 55, but Bensons version is what I mostly worked from.
 - **Chapter 7.3, WAV and MP3 files (p.238 to 239).** The WAV format byte by byte: a 12 byte RIFF chunk, a 24 byte FORMAT chunk, then the data, all little endian (storing multi-byte numbers placing the least significant at lowest memory address), which is standard for WAV files.
 - **Chapter 7.4, MIDI (p.241).** MIDI numbers every note on a keyboard with a single whole number, so one number carries both the note and the octave it is in. I took that idea and used it as the one way the app describes a note internally. `getOpenStringMidi` turns each strings open note and octave into its MIDI number with `(octave + 1) * 12 + pitchClass` (for example, the fret open high E string is note 64, which is E4). Then from there a fretted note is just that number plus the fret, since one fret is one semitone and MIDI counts in semitones (for example, the note on the 5th fret of the open high E string is 69, which is B4).
-  That single number then does three separate jobs: it is what gets played (`playNote(baseMidi[string] + fret)`), it is what the octave labels are worked back out of (dividing by 12 and subtracting 1 gives the octave, which is how the board can show "E2" instead of just "E"), and it is what the frequency is calculated from below. Having one number rather than a note and an octave kept separately is also what the octave bug in section 6.4 of this document is about, since that bug came from the two being stored apart and drifting.
 - **Appendix E, Equal tempered scales (p.377), and Appendix F, Frequency and MIDI chart (p.379).** These give the formula for turning a note number into an actual frequency in Hz and the anchor point it needs. Equal temperament means every semitone multiplies the frequency by the twelfth root of two, and the chart fixes MIDI note 69 as A4 at 440 Hz. Those two facts are the whole of `midiNoteToFrequency`, which is one line: 440 * Math.pow(2, (midiNote - 69) / 12). Everything the app plays goes through that function, this is the place where a number on the fretboard becomes a pitch.
-- **Chapter 7.6, Nyquist's theorem (p.244).** The theorem says the highest frequency you can record or reproduce is exactly half the rate you are sampling at. That is what decides how many samples per second the tone generator needs to produce. The highest note the app can play is fret 22 on the high E string, around 1170 Hz, so at the 22050 Hz the generator uses by default the limit is 11025 Hz, which leaves room for the note and its harmonics on top (to make it sound better, the harmonics are higher frequency pitches). It also told me how far I could safely drop that rate when the audio was making the app lag in d6: halving it to 11025 Hz still left a limit of 5512 Hz, comfortably above anything the fretboard can produce, which is why the app got faster without sounding worse.
-- **Chapter 7.8, Digital filters (p.247).** This is the part that explained why and how the plucked string sound works. The averaging step in the Karplus-Strong loop, `0.5 * (current + next)` in `generateToneWav`, is a filter that this chapter describes: averaging each value with its neighbour cuts high frequencies more than low ones. Reading that is what made it clear why the noise burst turns into a clean note rather than staying noisy, and why the high harmonics fade out first while the low ones keep ringing. Ultimately, this is what I realized can help me turn a synthesized sound into a realistic guitar sound. This part of the book also taught me why a separate decay factor is needed alongside it, since the filter shapes the tone but does not on its own make the note fade to silence.
+- **Chapter 7.6, Nyquist's theorem (p.244).** The theorem says the highest frequency you can record or reproduce is exactly half the rate you are sampling at. That is what decides how many samples per second the tone generator needs to produce.
+- **Chapter 7.8, Digital filters (p.247).** This is the part that explained why and how the plucked string sound works. This part of the book also taught me why a separate decay factor is needed alongside it, since the filter shapes the tone but does not on its own make the note fade to silence.
 
 ***The whole book:*** I did not read nor need most of the almost 500 page book, I focused on a few sections with titles that matched the problems I was facing or were mapped to decisions I had to make in the code.
 
@@ -373,13 +346,11 @@ Four test files exist, with only 3 testing the actual code, in all plain TypeScr
 
 **Edge cases:** The strongest test in the project is testing the voicing, that the same chord has to return different frets in different tunings. D major comes back as [x x 0 2 3 2] in Standard and [0 0 0 2 3 2] in Drop D, which is correct, both variations make D major. This tests the central coding logic of the voicing generator, in the logic nothing is hardcoded and no amount of checking individual shapes would prove that. This edge case proves that through varying tunings, the voicing generator correctly returns different frets for the same chord in different tunings that are valid. All edge cases are found in `src\tests\d7-edge-cases.ts`.
 
-- All tests pass as of the end of the project, and they are run on every commit to the repository. The tests are not exhaustive, but they cover the core logic of the app and confirm that it is working as intended.
+- All tests pass as of the end of the project, and they are run on every commit to the repository.
 
-**What the tests do not cover** They test the logic only. Nothing in the interface is covered beyond manual testing and the consequence are minimal but noticed. Every interface problem this project had was found by a someone using the app, through manual testing. During the final d8 testing period before my last app version is submitted to the app stores I found 28 testers to test the app. From the manual testing I did throughout the development process, and the testers during d8, the following issues were identified and fixed before the end of d8 by manual testing: The freezing bug from the progressions, audio cut off, the small screen layout problems and the touch targets being to small to accurately tap (for example, the 'x' to close a pop-up) on small devices.
+**What the tests do not cover** They test the logic only. Nothing in the interface is covered beyond manual testing and the consequence are minimal but noticed. Every interface problem this project had was found by a someone using the app, through manual testing. During the final d8 testing period before my last app version is submitted to the app stores I found 30 testers to test the app.
 
-**Device testing:** The app is in closed testing on Google Play with 28 daily testers using it on their own devices, currently on day 6 of the 14 days Google requires before applying for production access. That is what produced the d8 small device fixes: the interface running underneath the Android status bar and gesture bar, and close buttons too small to hit reliably on certain small android devices. I had been testing on only a few phones and had not seen this issue prior.
-
-If I had more time for this project, being able to test the interface in an automated way would be the biggest testing gap I would want to close.
+**Device testing:** The app is in closed testing on Google Play with 30 daily testers using it on their own devices, currently on day 6 of the 14 days Google requires before applying for production access. That is what produced the d8 small device fixes: the interface running underneath the Android status bar and gesture bar, and close buttons too small to hit reliably on certain small android devices. I had been testing on only a few phones and had not seen this issue prior.
 
 ---
 
@@ -387,19 +358,13 @@ If I had more time for this project, being able to test the interface in an auto
 
 Grouped by what kind of mistake it was because I think the pattern matters most:
 
-### 6.1 Setup problems (d1 to d3)
-
-Three small ones: The project was created on a newer Expo version, because the basic expo setup command: `npx create-expo-app` creates a project with a newer Expo version than the Expo Go app on my phone could run, fixed by moving to SDK 54. Security software on my machine blocked npm from verifying certificates so installs hung, fixed by pointing Node at the Windows certificate store. The bundler kept asking for an icon file that no longer existed, fixed by clearing its cache.
-
-The only lesson is that early setup issues is normal, and remembering in the future that I need to use expo 54 until the phone app updates to a newer version.
-
-### 6.2 The audio lag (d6): two problems stacked
+### 6.1 The audio lag (d6): two problems stacked
 
 After adding audio, everything felt slow. The sound lagged behind the tap, and the app lagged when selecting a note, including when clearing one.
 
 **The clue was the clearing:** Clearing plays no sound at all, so if clearing also lagged this could not be purely an audio problem. That one observation split it into two causes: every tap was redrawing all 23 fretboard rows (they were set up to skip redrawing, but three of their inputs were being rebuilt every time, so it never actually worked), and generating a tone runs tens of thousands of calculations on the apps single thread. Fixed on both sides: rows now only redraw when their own notes change, and the audio got a halved sample rate with preloads spread out instead of all at once.
 
-### 6.3 The audio clicking (d6): three attempts, two of them wrong
+### 6.2 The audio clicking (d6): three attempts, two of them wrong
 
 The strum had a clicking, cutting in and out sound. First I faded the last 80ms of each sound to silence, since they were ending in a hard cut while still ringing, which was better, but not fixed. Then I made each distinct note play only once per strum, since shapes that put the same note on two strings were restarting it mid ring. Again, better and not fixed, and I wrote at the time that I could not work out why.
 
@@ -407,7 +372,7 @@ Later in d7 I foudn the real cause was the design rather than a bug in it. Each 
 
 **The lesson: two of those three fixes were patches over a design decision.** I was treating symptoms because the symptoms were the visible thing.
 
-### 6.4 The octave design flaw (d7): the most instructive mistake
+### 6.3 The octave design flaw (d7): the most instructive mistake
 
 A design failure rather than solely a coding one.
 
@@ -417,7 +382,7 @@ The custom tuning builder exposed the issue immediately. Stepping a string down 
 
 **The lesson:** If a tuning had stored one number per string from the start, a note and an octave would just be that number read two different ways, and there would have been nothing to fall out of sync. When a later feature needs information a data structure does not hold, that is a sign the structure is incomplete, not a reason to add an extra field alongside it and hope it works out, it was clear it was a structure issue and I did not realize.
 
-### 6.5 The cloud duplicates (d7)
+### 6.4 The cloud duplicates (d7)
 
 Cloud saving went in during the last part of d6 and had never really been used. Once it was used regularly by me during testing, the account slowly refilled with copies of progressions I had deleted. The cause: deleting from the account did not delete the copy on the phone, so the next automatic backup saw a progression that was not on the account and uploaded it again.
 
@@ -425,19 +390,19 @@ The fix was to stop letting the same progression live in both places. Once it is
 
 I also added a twelve second timeout to every request because nothing stops one on its own. On a bad connection a request just sat there until the phone gave up, and everything waiting on it waited indefinitely, which was indistinguishable from the app being frozen.
 
-### 6.6 The freezing bug (d7): getting it wrong twice
+### 6.5 The freezing bug (d7): getting it wrong twice
 
 This is by far the issue I learned the most from.
 The app was freezing on ordinary progression actions: saving, reordering, loading.
 
 **My first theory was that too much was being redrawn**, so I stopped several parts of the app redrawing unnecessarily, which did actually improve the performance, but was not the bug. **My second theory was the network requests**, so I found that no cloud request had a timeout and added them. But that was also not the bug.
 
-**The actual cause was a coding mistake:** Saving and loading were each calling one lists update from inside the other lists update function, using it as a way to read the current value. React requires those functions to be simple and predictable, and breaking that has two effects that both matched the symptoms: it triggers a warning on every save and load, which in a development build goes through the error overlay and stalls the interface, and React deliberately runs those functions twice in development to catch exactly the mistake, which meant every save was quietly writing two copies. That second effect had probably been feeding the duplicates in 6.5 issues as well. The fix ended up being small as I seperated the code so that both now read the other list separately and do one plain update each.
+**The actual cause was a coding mistake:** Saving and loading were each calling one lists update from inside the other lists update function, using it as a way to read the current value. React requires those functions to be simple and predictable, and breaking that has two effects that both matched the symptoms: it triggers a warning on every save and load, which in a development build goes through the error overlay and stalls the interface, and React deliberately runs those functions twice in development to catch exactly the mistake, which meant every save was quietly writing two copies. That second effect had probably been feeding the duplicates in 6.4 issues as well. The fix ended up being small as I seperated the code so that both now read the other list separately and do one plain update each.
 
 **What I learned from it:** Both wrong theories were believable, which is exactly why neither was worth acting on before checking. I had everything I needed to find it sooner and did not read the code that actually runs on those actions until the third attempt.
-The contrast with section 6.2 helped solidify this lesson, as there I found a stacked pair of causes by following the one symptom that did not fit my theory, and here I ignored that same idea and ended up failing. The work done chasing the wrong answers did end up helping the app overall, but it was not the fix and did waste time. The lesson is to form a solid theory, then find the easiest way to prove it wrong, before writing any code and testing.
+The contrast with section 6.1 helped solidify this lesson, as there I found a stacked pair of causes by following the one symptom that did not fit my theory, and here I ignored that same idea and ended up failing. The work done chasing the wrong answers did end up helping the app overall, but it was not the fix and did waste time.
 
-### 6.7 Existing issues:
+### 6.6 Existing issues:
 
 There are four issues that I was not able to solve. I learn through every project, that knowing when to stop is an important decision to provide the best possible outcome for a project, and these four are all things I would like to fix if I had more time, but they are not crucial to functionality and the app is still usable without them.
 
@@ -457,17 +422,15 @@ All four, plus other ideas, are written up in `documents/todo_future.md`.
 
 # Concluding Remarks
 
-The closing remarks of the project: what it taught me and how I will use that going forward (Section 7), how the finished project compares against the original contract (Section 8), and where it ended up along with the work planned but not completed (Section 9).
-
 ## 7. What I Learned, and How I Will Use It
 
 Section 6 covers what each mistake taught me in context. These are the habits I am carrying out of the project:
 
 **Look for the math and patterns underneath a problem before writing code against the surface of it:** Reading Bensons book and finding that chords are just sets of numbers is what made this project possible at all. Working with note names as text would have made every operation a lookup. This is a habit I want to keep, and it works well beyond music, problems that look different on the surface often have an optimal underlying structure, and finding that structure is what makes them implementable at all.
 
-**Form a theory, then find the cheapest way to prove it wrong, before writing any code:** I did this well in 6.2 and poorly in 6.6, in the same project, which is what makes me realize the importance of this approach.
+**Form a theory, then find the cheapest way to prove it wrong, before writing any code:** I did this well in 6.1 and poorly in 6.5, in the same project, which is what makes me realize the importance of this approach.
 
-**Treat a data structure that cannot express something as incomplete, not as something to patch around:** From 6.4 and the reason that mistake cost a whole feature's worth of debugging.
+**Treat a data structure that cannot express something as incomplete, not as something to patch around:** From 6.3 and the reason that mistake cost a whole feature's worth of debugging.
 
 **Work out how big a problem actually is before trying to find an 'optimal' or 'clever' approach, sometimes the best answer is the simplest:** Trying every possibility beat every alternative here, three separate times, because the number of possibilities was genuinely small. Knowing the size of what I needed to solve is what makes that a decision rather than laziness.
 
@@ -487,8 +450,6 @@ Every deliverable landed roughly where the contract put it (the timeline in Sect
 2. **The backend was not in the original plan at all:** It was added after discussing the project with my instructor, scheduled into d6, and kept optional so the core app never depends on it. This was the largest single addition to the scope of the project.
 3. **Store publication was de-emphasised:**, also after discussing it with my instructor, since approval timing is outside my control. Testing, features and refinement took priority, with submission as a bonus rather than a requirement. In the end, I was able to submit to both stores, and refine the project to a better state than the contract required, even though it was not a requirement.
 
-I also added a set of tests in `d5`, earlier than the planned schedule, because the chord table was about to triple size in d5 and I wanted it verify it worked appropriately.
-
 ---
 
 ## 9. Conclusion and Future Work
@@ -499,8 +460,7 @@ FretFind is functionally complete. Everything in the contract made it to the fin
 
 **What is next:** `documents/todo_future.md` is the list, and exists because I made decisions to limit the scope of the project in order to ensure a successful delivery of the final product, everything I needed is implemented, everything left is unnecessary refinements.
 
-**An assessment:** The part I am most confident in is the engine. The chord matcher, the key inference and the shape generator all rest on the same idea, that music is math, and because they share the structure each one was cheaper to build than the last. The shape generator in particular does something I did not know I could build at the start: it works out playable guitar shapes for any chord in any tuning, from scratch, with nothing hardcoded, fast enough to run instantly as you create new chords.
-The part I would do differently is the interface, which is where every late problem came from and where I had no way to automate testing. I also wish I knew about Karplus-Strong synthesis earlier on in the audio creation journey, it would have saved a lot of time and effort in d6.
+**An assessment:** The part I would do differently is the interface, which is where every late problem came from and where I had no way to automate testing. I also wish I knew about Karplus-Strong synthesis earlier on in the audio creation journey, it would have saved a lot of time and effort in d6.
 
 ---
 
